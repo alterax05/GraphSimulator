@@ -26,6 +26,16 @@ wss.on('connection', (ws: WebSocket, request: IncomingMessage) => {
 
     ws.on('message', (message: string) => {
         const messageClient: MessageClient = JSON.parse(message);
+        if(messageClient.message === 'list-users') {
+            const users = Array.from(clientMap.keys());
+            const messageClient: MessageClient = {
+                id: '',
+                to: [id],
+                message: JSON.stringify(users)
+            };
+            ws.send(JSON.stringify(messageClient));
+            return;
+        }
         messageClient.to.forEach(to => {
             const client = clientMap.get(to);
             if(client) {
