@@ -31,7 +31,7 @@ public class Main {
 
             synchronized (System.out)
             {
-                System.out.print("Inserisci i vicini separati da una virgola: ");
+                System.out.print("Inserisci i vicini separati da una virgola e senza spazi: ");
             }
 
             String neighborsString = "";
