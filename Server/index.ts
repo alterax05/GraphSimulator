@@ -1,54 +1,23 @@
-import { IncomingMessage } from "http";
-import { WebSocket, WebSocketServer } from "ws";
+import express from "express";
+import wsServer from "./routes/websocket";
+import path from "path";
 
-//https://stackoverflow.com/questions/12192321/is-it-possible-to-send-a-data-when-a-websocket-connection-is-opened
-//non c'è il body del messaggio
+const app = express();
 
-const wss = new WebSocketServer({ port: Number(process.env.PORT) || 3000});
+app.use(express.static(path.join(__dirname, "/public")));
 
-let clientMap: Map<string, WebSocket> = new Map();
-
-interface MessageClient {
-    id: string;
-    to: string[];
-    message: string;
-}
-
-wss.on('connection', (ws: WebSocket, request: IncomingMessage) => {
-    const url = request.url;
-    if(!url) {
-        ws.close();
-        return;
-    }
-
-    const id = url.split('?')[1].split('=')[1];
-    clientMap.set(id, ws);
-
-    ws.on('message', (message: string) => {
-        const messageClient: MessageClient = JSON.parse(message);
-        if(messageClient.message === 'list-users') {
-            const users = Array.from(clientMap.keys());
-            const messageClient: MessageClient = {
-                id: '',
-                to: [id],
-                message: JSON.stringify(users)
-            };
-            ws.send(JSON.stringify(messageClient));
-            return;
-        }
-        messageClient.to.forEach(to => {
-            const client = clientMap.get(to);
-            if(client) {
-                client.send(JSON.stringify(messageClient));
-            }
-        });
-    });
-
-    ws.on('close', () => {
-        clientMap.delete(id);
-    });
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "/public/index.html"));
 });
 
-wss.on('error', (error: Error) => {
-    console.log(error);
+const port = process.env.PORT || 3000;
+const server = app.listen(port, () => {
+  console.log(`Listening on port ${port}!`);
+});
+
+// forward web socket requests to wsServer
+server.on("upgrade", (request, socket, head) => {
+  wsServer.handleUpgrade(request, socket, head, socket => {
+    wsServer.emit("connection", socket, request);
+  });
 });
