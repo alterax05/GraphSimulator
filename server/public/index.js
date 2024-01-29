@@ -27,7 +27,12 @@ var network = new vis.Network(container, data, options);
 
 const randomId = Math.floor(Math.random() * 10000);
 
-const ws = new WebSocket(`ws://localhost:3000?id=inspector${randomId}`);
+const currentHost = window.location.hostname;
+const currentPort = window.location.port;
+const currentProtocol = window.location.protocol == "https:" ? "wss" : "ws";
+
+const ws = new WebSocket(`${currentProtocol}://${currentHost}:${currentPort}?id=inspector${randomId}`);
+
 ws.onopen = () => {
   console.log("connected");
   ws.send(JSON.stringify({ command: "realtime-list-users" }));
@@ -54,7 +59,7 @@ ws.onmessage = message => {
 
     data.nodes.forEach(node => {
       // add node if it doesn't exist
-      if (!nodes.get(node.id)) {
+      if (!nodes.get(node.id) && !node.id.startsWith("inspector") ) {
         nodes.add({
           id: node.id,
           label: node.id,
