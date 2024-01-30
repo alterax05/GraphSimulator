@@ -12,6 +12,7 @@ const messageScheme = z.object({
 export enum Command {
   ListUsers = "list-users",
   RealtimeListUsers = "realtime-list-users",
+  RealtimeListActions = "realtime-list-actions",
   SetNeighbours = "set-neighbours",
 }
 

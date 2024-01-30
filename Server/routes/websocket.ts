@@ -60,7 +60,7 @@ wsServer.on("connection", (ws, request) => {
       return controller.subscribeToRealtimeUsersList(client, messageData);
     }
 
-    if (messageData.command) {
+    if (messageData.command === Command.RealtimeListActions) {
       return controller.subscribeToRealtimeActions(client);
     }
 
