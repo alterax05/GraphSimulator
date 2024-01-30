@@ -29,6 +29,13 @@ wsServer.on("connection", (ws, request) => {
     ws.send(JSON.stringify({ message: "id already exists" }));
     return ws.close();
   }
+  // regex to validate id
+  // id must start with A, B or C and be followed by a number between 0 and 25
+  const idPattern = /^[ABC]([0-9]|1[0-9]|2[0-5])(?!\d)|inspector/;
+  if (!idPattern.test(id)) {
+    ws.send(JSON.stringify({ message: "invalid id" }));
+    return ws.close();
+  }
 
   // register client
   const newClient = { id, ws, subscriptions: [], neighbours: [] };
