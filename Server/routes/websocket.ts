@@ -5,6 +5,8 @@ import { Client } from "../types/socket";
 import WebSocketController from "../controllers/websocket";
 
 export const clients: Map<string, Client> = new Map();
+const ipCounts: Map<string, number> = new Map();  
+const MAX_CONNECTIONS_PER_IP = process.env.NODE_ENV === "production" ? 5 : 1000;
 
 const wsServer = new WebSocketServer({ noServer: true });
 const controller = new WebSocketController();
@@ -18,6 +20,16 @@ wsServer.on("connection", (ws, request) => {
   // parse url to get query params
   const { query } = UrlParser.parse(request.url, true);
   const id = query.id;
+  const ip = request.socket.remoteAddress;
+
+  //Limit connections per IP
+  if (ip && ipCounts.has(ip) && (ipCounts.get(ip) || 0) >= MAX_CONNECTIONS_PER_IP) {
+    // If it has, refuse the connection
+    ws.send(JSON.stringify({ message: "Maximum connections reached" }));
+    return ws.close();
+  }
+
+  ipCounts.set(ip!, (ipCounts.get(ip!) || 0) + 1);
 
   // prevent access for clients without id
   if (!id || typeof id !== "string") {
