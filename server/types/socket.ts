@@ -11,4 +11,5 @@ export interface ClientMessage {
   to?: string[];
   message?: string;
   command?: string;
+  neighbours?: string[];
 }

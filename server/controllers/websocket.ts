@@ -4,7 +4,7 @@ import { Topic } from "../utils/socketUtils";
 
 class WebSocketController {
   public forwardMessage(message: ClientMessage) {
-    return message.to?.forEach(to => {
+    return message.to?.forEach((to) => {
       const client = clients.get(to);
       if (client) {
         client.ws.send(JSON.stringify(message));
@@ -30,15 +30,50 @@ class WebSocketController {
     return this.listUsers(client);
   }
 
+  public subscribeToRealtimeActions(client: Client) {
+    client.subscriptions.push(Topic.RealtimeListActions);
+    return client.ws.send(
+      JSON.stringify({
+        message: "Subscribed to realtime actions",
+      })
+    );
+  }
+
   public publishRealtimeUsersList() {
-    const subscribedUsers = Array.from(clients.values()).filter(client =>
+    const subscribedUsers = Array.from(clients.values()).filter((client) =>
       client.subscriptions.includes(Topic.RealtimeListUsers)
     );
-    const usersIds = Array.from(clients.keys());
-
-    subscribedUsers.forEach(client => {
+    subscribedUsers.forEach((client) => {
+      // send list of users to subscribed clients
       this.listUsers(client);
     });
+  }
+
+  public publishRealtimeActions(sender: Client, senderMessage: ClientMessage) {
+    const subscribedUsers = Array.from(clients.values()).filter((client) =>
+      client.subscriptions.includes(Topic.RealtimeListActions)
+    );
+    subscribedUsers.forEach((client) => {
+      client.ws.send(
+        JSON.stringify({
+          from: sender.id,
+          action: senderMessage,
+        })
+      );
+    });
+  }
+
+  public setNeighbours(sender: Client, message: ClientMessage) {
+    if (message.neighbours) {
+      sender.neighbours = message.neighbours;
+      this.publishRealtimeUsersList();
+
+      return sender.ws.send(
+        JSON.stringify({ message: "Neighbours set successfully" })
+      );
+    }
+
+    return sender.ws.send(JSON.stringify({ message: "Neighbours required" }));
   }
 }
 

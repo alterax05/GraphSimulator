@@ -31,43 +31,60 @@ wsServer.on("connection", (ws, request) => {
   }
 
   // register client
-  clients.set(id, { id, ws, subscriptions: [], neighbours: [] });
+  const newClient = { id, ws, subscriptions: [], neighbours: [] };
+  clients.set(id, newClient);
   console.log("new connection with id: ", id);
 
   // publish realtime users list to clients subscribed to the topic
   controller.publishRealtimeUsersList();
+  controller.publishRealtimeActions(newClient, { message: "New Connection" });
 
-  ws.on("message", message => {
-    const messageClient = SocketUtils.parseMessage(message);
+  ws.on("message", (message) => {
+    const messageData = SocketUtils.parseMessage(message);
     const client = clients.get(id);
     if (!client) return;
 
-    if (!messageClient) {
+    if (!messageData) {
       ws.send(JSON.stringify({ message: "Invalid message sintax" }));
       return;
     }
 
+    controller.publishRealtimeActions(client, messageData);
+
     // retrieve list of all users
-    if (messageClient.command === Command.ListUsers) {
+    if (messageData.command === Command.ListUsers) {
       return controller.listUsers(client);
     }
 
-    if (messageClient.command === Command.RealtimeListUsers) {
-      return controller.subscribeToRealtimeUsersList(client, messageClient);
+    if (messageData.command === Command.RealtimeListUsers) {
+      return controller.subscribeToRealtimeUsersList(client, messageData);
+    }
+
+    if (messageData.command) {
+      return controller.subscribeToRealtimeActions(client);
+    }
+
+    if (messageData.command === Command.SetNeighbours) {
+      return controller.setNeighbours(client, messageData);
     }
 
     // send message to specified clients
-    if (messageClient.to) {
-      return controller.forwardMessage(messageClient);
+    if (messageData.to) {
+      return controller.forwardMessage(messageData);
     }
 
     return ws.send(JSON.stringify({ message: "Invalid message" }));
   });
 
   ws.on("close", () => {
-    clients.delete(id);
+    if (!clients.get(id)) return;
 
     // publish realtime users list to clients subscribed to the topic
+    controller.publishRealtimeActions(clients.get(id)!, {
+      message: "Disconnected",
+    });
+
+    clients.delete(id);
     controller.publishRealtimeUsersList();
   });
 });

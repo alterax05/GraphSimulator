@@ -31,25 +31,36 @@ const currentHost = window.location.hostname;
 const currentPort = window.location.port;
 const currentProtocol = window.location.protocol == "https:" ? "wss" : "ws";
 
-const ws = new WebSocket(`${currentProtocol}://${currentHost}:${currentPort}?id=inspector${randomId}`);
+const ws = new WebSocket(
+  `${currentProtocol}://${currentHost}:${currentPort}?id=inspector${randomId}`
+);
 
 ws.onopen = () => {
   console.log("connected");
   ws.send(JSON.stringify({ command: "realtime-list-users" }));
+  ws.send(JSON.stringify({ command: "realtime-list-actions" }));
 };
-ws.onmessage = message => {
+ws.onmessage = (message) => {
   console.log(message.data);
   const data = JSON.parse(message.data);
 
-  // based on the data structure update the network
   if (data.nodes) {
-    nodes.forEach(node => {
+    updateNodes(data.nodes);
+  } else if (data.action) {
+    updateTable(data);
+  }
+};
+
+const updateNodes = (newNodes) => {
+  // based on the data structure update the network
+  if (newNodes) {
+    nodes.forEach((node) => {
       // delete old nodes
-      if (!data.nodes.some(n => n.id === node.id)) {
+      if (!newNodes.some((n) => n.id === node.id)) {
         nodes.remove(node.id);
 
         // remove old edges
-        edges.forEach(edge => {
+        edges.forEach((edge) => {
           if (edge.from === node.id || edge.to === node.id) {
             edges.remove(edge.id);
           }
@@ -57,14 +68,63 @@ ws.onmessage = message => {
       }
     });
 
-    data.nodes.forEach(node => {
+    newNodes.forEach((node) => {
       // add node if it doesn't exist
-      if (!nodes.get(node.id) && !node.id.startsWith("inspector") ) {
+      if (!nodes.get(node.id) && !node.id.startsWith("inspector")) {
         nodes.add({
           id: node.id,
           label: node.id,
         });
+
+        // delete old edges
+        node.neighbours.forEach((neighbor) => {
+          if (
+            !newNodes.some((n) => n.id === neighbor) &&
+            !neighbor.startsWith("inspector")
+          ) {
+            edges.forEach((edge) => {
+              if (
+                (edge.from === node.id && edge.to === neighbor) ||
+                (edge.from === neighbor && edge.to === node.id)
+              ) {
+                edges.remove(edge.id);
+              }
+            });
+          }
+        });
+
+        // add edges
+        node.neighbours.forEach((neighbor) => {
+          // check that edge doesn't exist
+          if (
+            !edges.get({
+              filter: (edge) =>
+                (edge.from === node.id && edge.to === neighbor) ||
+                (edge.from === neighbor && edge.to === node.id),
+            }).length
+          ) {
+            edges.add({
+              from: node.id,
+              to: neighbor,
+            });
+          }
+        });
       }
     });
   }
+};
+
+const updateTable = (data) => {
+  const clientId = data.from;
+  const action = JSON.stringify(data.action);
+
+  const tableBody = document.getElementById("network-table-body");
+  const newRow = `
+    <tr>
+      <th scope="row">${clientId}</th>
+      <td>${action}</td>
+    </tr>
+  `;
+
+  tableBody.innerHTML += newRow;
 };
