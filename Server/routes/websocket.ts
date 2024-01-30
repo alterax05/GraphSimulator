@@ -5,6 +5,8 @@ import { Client } from "../types/socket";
 import WebSocketController from "../controllers/websocket";
 
 export const clients: Map<string, Client> = new Map();
+const ipCounts: Map<string, number> = new Map();  
+const MAX_CONNECTIONS_PER_IP = process.env.NODE_ENV === "production" ? 5 : 1000;
 
 const wsServer = new WebSocketServer({ noServer: true });
 const controller = new WebSocketController();
@@ -18,6 +20,16 @@ wsServer.on("connection", (ws, request) => {
   // parse url to get query params
   const { query } = UrlParser.parse(request.url, true);
   const id = query.id;
+  const ip = request.socket.remoteAddress;
+
+  //Limit connections per IP
+  if (ip && ipCounts.has(ip) && (ipCounts.get(ip) || 0) >= MAX_CONNECTIONS_PER_IP) {
+    // If it has, refuse the connection
+    ws.send(JSON.stringify({ message: "Maximum connections reached" }));
+    return ws.close();
+  }
+
+  ipCounts.set(ip!, (ipCounts.get(ip!) || 0) + 1);
 
   // prevent access for clients without id
   if (!id || typeof id !== "string") {
@@ -27,6 +39,13 @@ wsServer.on("connection", (ws, request) => {
   // prevent access for clients with already existing id
   if (clients.has(id)) {
     ws.send(JSON.stringify({ message: "id already exists" }));
+    return ws.close();
+  }
+  // regex to validate id
+  // id must start with A, B or C and be followed by a number between 0 and 25
+  const idPattern = /^[ABC]([0-9]|1[0-9]|2[0-5])(?!\d)|inspector/;
+  if (!idPattern.test(id)) {
+    ws.send(JSON.stringify({ message: "invalid id" }));
     return ws.close();
   }
 
