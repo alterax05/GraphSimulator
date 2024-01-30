@@ -116,7 +116,12 @@ const updateNodes = (newNodes) => {
 
 const updateTable = (data) => {
   const clientId = data.from;
-  const action = JSON.stringify(data.action);
+  let action;
+  if (data.action.to) {
+    action = `Message: "${data.action.message}" to ${data.action.to}`;
+  } else {
+    action = data.action.message;
+  }
 
   const tableBody = document.getElementById("network-table-body");
   const newRow = `
