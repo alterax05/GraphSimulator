@@ -103,6 +103,16 @@ wsServer.on("connection", (ws, request) => {
 
     // send message to specified clients
     if (messageData.to) {
+      // check if all clients exist
+      messageData.to.forEach((clientId) => {
+        if (!clients.has(clientId)) {
+          ws.send(
+            JSON.stringify({ message: `Client ${clientId} does not exist` })
+          );
+          return;
+        }
+      });
+      
       return controller.forwardMessage(messageData);
     }
 
