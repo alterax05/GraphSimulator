@@ -122,5 +122,11 @@ const updateTable = (data) => {
     </tr>
   `;
 
-  tableBody.innerHTML += newRow;
+  tableBody.innerHTML = newRow + tableBody.innerHTML;
+
+  // remove old rows
+  const oldRows = tableBody.getElementsByTagName("tr");
+  if (oldRows.length > 50) {
+    tableBody.removeChild(oldRows[oldRows.length - 1]);
+  }
 };
