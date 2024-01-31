@@ -75,6 +75,8 @@ class WebSocketController {
 
     return sender.ws.send(JSON.stringify({ message: "Neighbours required" }));
   }
+
+  public createNode(id: string) {}
 }
 
 export default WebSocketController;

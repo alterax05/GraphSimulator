@@ -52,63 +52,54 @@ ws.onmessage = (message) => {
 };
 
 const updateNodes = (newNodes) => {
-  // based on the data structure update the network
   if (newNodes) {
+    // search and delete old nodes and edges
     nodes.forEach((node) => {
-      // delete old nodes
-      if (!newNodes.some((n) => n.id === node.id)) {
+      if (!newNodes.find((newNode) => newNode.id == node.id)) {
         nodes.remove(node.id);
 
-        // remove old edges
+        // remove related edges
         edges.forEach((edge) => {
-          if (edge.from === node.id || edge.to === node.id) {
+          if (edge.from == node.id || edge.to == node.id) {
             edges.remove(edge.id);
           }
         });
       }
     });
 
-    newNodes.forEach((node) => {
-      // add node if it doesn't exist
-      if (!nodes.get(node.id) && !node.id.startsWith("inspector")) {
-        nodes.add({
-          id: node.id,
-          label: node.id,
-        });
+    // add new nodes
+    newNodes.forEach((newNode) => {
+      if (!nodes.get(newNode.id) && !newNode.id.startsWith("inspector")) {
+        nodes.add({ id: newNode.id, label: newNode.id });
+      }
+    });
 
-        // delete old edges
-        node.neighbours.forEach((neighbor) => {
-          if (
-            !newNodes.some((n) => n.id === neighbor) &&
-            !neighbor.startsWith("inspector")
-          ) {
-            edges.forEach((edge) => {
-              if (
-                (edge.from === node.id && edge.to === neighbor) ||
-                (edge.from === neighbor && edge.to === node.id)
-              ) {
-                edges.remove(edge.id);
-              }
-            });
-          }
-        });
-
-        // add edges
-        node.neighbours.forEach((neighbor) => {
-          // check that edge doesn't exist
-          if (
-            !edges.get({
-              filter: (edge) =>
-                (edge.from === node.id && edge.to === neighbor) ||
-                (edge.from === neighbor && edge.to === node.id),
-            }).length
-          ) {
+    // add new edges
+    newNodes.forEach((newNode) => {
+      if (newNode.neighbours) {
+        newNode.neighbours.forEach((neighbour) => {
+          if (!edges.get(`${newNode.id}-${neighbour}`)) {
             edges.add({
-              from: node.id,
-              to: neighbor,
+              id: `${newNode.id}-${neighbour}`,
+              from: newNode.id,
+              to: neighbour,
             });
           }
         });
+      }
+    });
+
+    // remove old edges
+    edges.forEach((edge) => {
+      // check if "from" node has the "to" in the neighbours
+      const fromNode = newNodes.find((node) => node.id == edge.from);
+      if (!fromNode) {
+        edges.remove(edge.id);
+      } else if (
+        !fromNode.neighbours ||
+        !fromNode.neighbours.includes(edge.to)
+      ) {
+        edges.remove(edge.id);
       }
     });
   }
@@ -120,7 +111,7 @@ const updateTable = (data) => {
   if (data.action.to) {
     action = `Message: "${data.action.message}" to ${data.action.to}`;
   } else {
-    action = data.action.message;
+    action = JSON.stringify(data.action);
   }
 
   const tableBody = document.getElementById("network-table-body");
