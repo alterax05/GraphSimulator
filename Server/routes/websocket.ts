@@ -5,7 +5,7 @@ import { Client } from "../types/socket";
 import WebSocketController from "../controllers/websocket";
 
 export const clients: Map<string, Client> = new Map();
-const ipCounts: Map<string, number> = new Map();  
+const ipCounts: Map<string, number> = new Map();
 const MAX_CONNECTIONS_PER_IP = process.env.NODE_ENV === "production" ? 5 : 1000;
 
 const wsServer = new WebSocketServer({ noServer: true });
@@ -23,7 +23,11 @@ wsServer.on("connection", (ws, request) => {
   const ip = request.socket.remoteAddress;
 
   //Limit connections per IP
-  if (ip && ipCounts.has(ip) && (ipCounts.get(ip) || 0) >= MAX_CONNECTIONS_PER_IP) {
+  if (
+    ip &&
+    ipCounts.has(ip) &&
+    (ipCounts.get(ip) || 0) >= MAX_CONNECTIONS_PER_IP
+  ) {
     // If it has, refuse the connection
     ws.send(JSON.stringify({ message: "Maximum connections reached" }));
     return ws.close();
@@ -43,7 +47,8 @@ wsServer.on("connection", (ws, request) => {
   }
   // regex to validate id
   // id must start with A, B or C and be followed by a number between 0 and 25
-  const idPattern = /^[ABC]([0-9]|1[0-9]|2[0-5])$|inspector[0-9][0-9][0-9][0-9]$/;
+  const idPattern =
+    /^[ABC]([0-9]|1[0-9]|2[0-5])$|inspector[0-9][0-9][0-9][0-9]$/;
   if (!idPattern.test(id)) {
     ws.send(JSON.stringify({ message: "invalid id" }));
     return ws.close();
@@ -68,8 +73,17 @@ wsServer.on("connection", (ws, request) => {
       return;
     }
 
-    controller.publishRealtimeActions(client, messageData);
-
+    if (messageData.to) {
+      //Dont show message if there is no one to send it to
+      if(!messageData.to.every((clientID) => {return clients.has(clientID)})) {
+        ws.send(JSON.stringify({ message: `Invalid client(s) in the recipient list. Use the "list-users" to list the connected users` }));
+        return;
+      }
+      controller.publishRealtimeActions(client, messageData);
+    }else{
+      controller.publishRealtimeActions(client, messageData);
+    }
+    
     // retrieve list of all users
     if (messageData.command === Command.ListUsers) {
       return controller.listUsers(client);
