@@ -43,7 +43,7 @@ wsServer.on("connection", (ws, request) => {
   }
   // regex to validate id
   // id must start with A, B or C and be followed by a number between 0 and 25
-  const idPattern = /^[ABC]([0-9]|1[0-9]|2[0-5])(?!\d)|inspector/;
+  const idPattern = /^[ABC]([0-9]|1[0-9]|2[0-5])$|inspector[0-9][0-9][0-9][0-9]$/;
   if (!idPattern.test(id)) {
     ws.send(JSON.stringify({ message: "invalid id" }));
     return ws.close();
