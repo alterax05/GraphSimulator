@@ -75,15 +75,25 @@ wsServer.on("connection", (ws, request) => {
 
     if (messageData.to) {
       //Dont show message if there is no one to send it to
-      if(!messageData.to.every((clientID) => {return clients.has(clientID)})) {
-        ws.send(JSON.stringify({ message: `Invalid client(s) in the recipient list. Use the "list-users" to list the connected users` }));
+      if (
+        !messageData.to.every((clientID) => {
+          return clients.has(clientID);
+        })
+      ) {
+        ws.send(
+          JSON.stringify({
+            message: `Invalid client(s) in the recipient list. Use the 'list-users' to list the connected users`,
+          })
+        );
         return;
       }
       controller.publishRealtimeActions(client, messageData);
-    }else{
+      // send message to specified clients
+      return controller.forwardMessage(messageData);
+    } else {
       controller.publishRealtimeActions(client, messageData);
     }
-    
+
     // retrieve list of all users
     if (messageData.command === Command.ListUsers) {
       return controller.listUsers(client);
@@ -99,21 +109,6 @@ wsServer.on("connection", (ws, request) => {
 
     if (messageData.command === Command.SetNeighbours) {
       return controller.setNeighbours(client, messageData);
-    }
-
-    // send message to specified clients
-    if (messageData.to) {
-      // check if all clients exist
-      messageData.to.forEach((clientId) => {
-        if (!clients.has(clientId)) {
-          ws.send(
-            JSON.stringify({ message: `Client ${clientId} does not exist` })
-          );
-          return;
-        }
-      });
-      
-      return controller.forwardMessage(messageData);
     }
 
     return ws.send(JSON.stringify({ message: "Invalid message" }));
