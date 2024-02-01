@@ -73,6 +73,11 @@ wsServer.on("connection", (ws, request) => {
       return;
     }
 
+    if(messageData.message && messageData.message.length > 100){
+      ws.send(JSON.stringify({message: "Message too big. Max 100 characters"}));
+      return;
+    }
+
     if (messageData.to) {
       //Dont show message if there is no one to send it to
       if (
