@@ -79,6 +79,11 @@ wsServer.on("connection", async (ws, request) => {
       return;
     }
 
+    if(messageData.message && messageData.message.length > 100){
+      ws.send(JSON.stringify({message: "Message too big. Max 100 characters"}));
+      return;
+    }
+
     if (messageData.to) {
       // don't forward the message if the recipient list contains invalid ids
       if (!messageData.to.every((id) => clients.has(id))) {
