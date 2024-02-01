@@ -7,6 +7,11 @@ export interface Client {
   neighbours: string[];
 }
 
+export interface Edge {
+  fromNodeId: string;
+  toNodeId: string;
+}
+
 export interface ClientMessage {
   to?: string[];
   message?: string;

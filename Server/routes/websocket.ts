@@ -2,13 +2,13 @@ import { WebSocketServer } from "ws";
 import UrlParser from "url";
 import SocketUtils, { Command } from "../utils/socketUtils";
 import { Client } from "../types/socket";
-import WebSocketController from "../controllers/websocket";
+import WebSocketService from "../service/websocket";
 import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import ClientFilterUtils from "../utils/clientFilterUtils";
 
 export const clients: Map<string, Client> = new Map();
 const wsServer = new WebSocketServer({ noServer: true });
-const controller = new WebSocketController();
+const wsService = new WebSocketService();
 
 // limit each IP to X connections per hour
 const rateLimitingOptions = {
@@ -65,11 +65,11 @@ wsServer.on("connection", async (ws, request) => {
   console.log("new connection with id: ", id);
 
   // publish realtime users list to clients subscribed to the topic
-  controller.publishRealtimeUsersList();
-  controller.publishRealtimeActions(newClient, { message: "New Connection" });
+  wsService.publishRealtimeUsersList();
+  wsService.publishRealtimeAction(newClient, { message: "New Connection" });
 
   // handle different type of messages
-  ws.on("message", (message) => {
+  ws.on("message", message => {
     const messageData = SocketUtils.parseMessage(message);
     const client = clients.get(id);
     if (!client) return;
@@ -79,14 +79,16 @@ wsServer.on("connection", async (ws, request) => {
       return;
     }
 
-    if(messageData.message && messageData.message.length > 100){
-      ws.send(JSON.stringify({message: "Message too big. Max 100 characters"}));
+    if (messageData.message && messageData.message.length > 100) {
+      ws.send(
+        JSON.stringify({ message: "Message too big. Max 100 characters" })
+      );
       return;
     }
 
     if (messageData.to) {
       // don't forward the message if the recipient list contains invalid ids
-      if (!messageData.to.every((id) => clients.has(id))) {
+      if (!messageData.to.every(id => clients.has(id))) {
         return ws.send(
           JSON.stringify({
             message: `Invalid client(s) in the recipient list. Use the 'list-users' to list the connected users`,
@@ -94,27 +96,27 @@ wsServer.on("connection", async (ws, request) => {
         );
       }
 
-      controller.publishRealtimeActions(client, messageData);
+      wsService.publishRealtimeAction(client, messageData);
       // send message to specified clients
-      return controller.forwardMessage(messageData);
+      return wsService.forwardMessage(messageData);
     } else {
-      controller.publishRealtimeActions(client, messageData);
+      wsService.publishRealtimeAction(client, messageData);
     }
 
     if (messageData.command === Command.ListUsers) {
-      return controller.listUsers(client);
+      return wsService.listUsers(client);
     }
 
     if (messageData.command === Command.RealtimeListUsers) {
-      return controller.subscribeToRealtimeUsersList(client, messageData);
+      return wsService.subscribeToRealtimeUsersList(client, messageData);
     }
 
     if (messageData.command === Command.RealtimeListActions) {
-      return controller.subscribeToRealtimeActions(client);
+      return wsService.subscribeToRealtimeActions(client);
     }
 
     if (messageData.command === Command.SetNeighbours) {
-      return controller.setNeighbours(client, messageData);
+      return wsService.setNeighbours(client, messageData);
     }
 
     return ws.send(JSON.stringify({ message: "Invalid message" }));
@@ -124,12 +126,12 @@ wsServer.on("connection", async (ws, request) => {
     if (!clients.get(id)) return;
 
     // publish realtime users list to clients subscribed to the topic
-    controller.publishRealtimeActions(clients.get(id)!, {
+    wsService.publishRealtimeAction(clients.get(id)!, {
       message: "Disconnected",
     });
 
     clients.delete(id);
-    controller.publishRealtimeUsersList();
+    wsService.publishRealtimeUsersList();
   });
 });
 

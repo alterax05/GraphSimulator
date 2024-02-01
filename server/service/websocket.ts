@@ -1,11 +1,13 @@
-import { clients } from "../routes/websocket";
 import { Client, ClientMessage } from "../types/socket";
+import Graph from "../utils/graph";
 import { Topic } from "../utils/socketUtils";
 
-class WebSocketController {
+class WebSocketService {
+  graph = new Graph();
+
   public forwardMessage(message: ClientMessage) {
-    return message.to?.forEach((to) => {
-      const client = clients.get(to);
+    return message.to?.forEach(destination => {
+      const client = this.graph.getNodes().get(destination);
       if (client) {
         client.ws.send(JSON.stringify(message));
       }
@@ -13,14 +15,9 @@ class WebSocketController {
   }
 
   public listUsers(senderClient: Client) {
-    const usersData = Array.from(clients.entries()).map(([id, client]) => ({
-      id: id,
-      neighbours: client.neighbours,
-    }));
-
     senderClient.ws.send(
       JSON.stringify({
-        nodes: usersData,
+        nodes: this.graph.getNodes().keys(),
       })
     );
   }
@@ -40,20 +37,24 @@ class WebSocketController {
   }
 
   public publishRealtimeUsersList() {
-    const subscribedUsers = Array.from(clients.values()).filter((client) =>
-      client.subscriptions.includes(Topic.RealtimeListUsers)
+    const subscribedUsers = Array.from(this.graph.getNodes().values()).filter(
+      client => client.subscriptions.includes(Topic.RealtimeListUsers)
     );
-    subscribedUsers.forEach((client) => {
-      // send list of users to subscribed clients
-      this.listUsers(client);
+
+    subscribedUsers.forEach(client => {
+      client.ws.send(
+        JSON.stringify({
+          nodes: this.graph.getAdjacencyList(),
+        })
+      );
     });
   }
 
-  public publishRealtimeActions(sender: Client, senderMessage: ClientMessage) {
-    const subscribedUsers = Array.from(clients.values()).filter((client) =>
-      client.subscriptions.includes(Topic.RealtimeListActions)
+  public publishRealtimeAction(sender: Client, senderMessage: ClientMessage) {
+    const subscribedUsers = Array.from(this.graph.getNodes().values()).filter(
+      client => client.subscriptions.includes(Topic.RealtimeListActions)
     );
-    subscribedUsers.forEach((client) => {
+    subscribedUsers.forEach(client => {
       client.ws.send(
         JSON.stringify({
           from: sender.id,
@@ -79,4 +80,4 @@ class WebSocketController {
   public createNode(id: string) {}
 }
 
-export default WebSocketController;
+export default WebSocketService;
