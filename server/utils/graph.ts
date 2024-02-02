@@ -2,12 +2,12 @@ import { Client, Edge } from "../types/socket";
 
 class Graph {
   private nodes: Map<string, Client>;
-  private adjacencyList: Map<string, Edge[]>;
+  private adjacencyList: Map<string, string[]>;
   private numberOfNodes: number;
 
   constructor() {
     this.numberOfNodes = 0;
-    this.adjacencyList = new Map<string, Edge[]>();
+    this.adjacencyList = new Map<string, string[]>();
     this.nodes = new Map<string, Client>();
   }
 
@@ -19,17 +19,22 @@ class Graph {
     }
   }
 
-  public addEdge(fromNode: string, toNode: string): void {
+  public addNeighbour(fromNode: string, toNode: string): void {
     if (!this.nodes.has(fromNode) || !this.nodes.has(toNode)) return;
 
-    // TODO: edges have orientation for now
-    let edges = this.adjacencyList.get(fromNode);
-    if (edges && !edges.find(edge => edge.toNodeId === toNode)) {
-      edges.push({
-        fromNodeId: fromNode,
-        toNodeId: toNode,
-      });
+    let neighbours = this.adjacencyList.get(fromNode);
+    if (neighbours && !neighbours.find((edge) => edge === toNode)) {
+      neighbours.push(toNode);
     }
+  }
+
+  public setNeighbours(fromNode: string, neighbours: string[]): void {
+    if (!this.nodes.has(fromNode)) return;
+    const existingNeighbours = neighbours.filter((neighbour) =>
+      this.nodes.has(neighbour)
+    );
+
+    this.adjacencyList.set(fromNode, existingNeighbours);
   }
 
   public deleteNode(nodeId: string) {
@@ -38,7 +43,9 @@ class Graph {
 
     for (let edgesInfo of this.adjacencyList) {
       const edgesFromNodeId = edgesInfo[0];
-      const newEdges = edgesInfo[1].filter(edge => edge.toNodeId !== nodeId);
+      const newEdges = edgesInfo[1].filter(
+        (neighbours) => neighbours !== nodeId
+      );
 
       this.adjacencyList.set(edgesFromNodeId, newEdges);
     }
@@ -61,11 +68,19 @@ class Graph {
       let connections = "";
       if (nodeConnections.length > 0) {
         for (let vertex of nodeConnections) {
-          connections += vertex.toNodeId + " ";
+          connections += vertex + " ";
         }
       }
       console.log(node + "--> [ " + connections + " ]");
     }
+  }
+
+  public hasNode(nodeId: string) {
+    return this.nodes.has(nodeId);
+  }
+
+  public getNode(nodeId: string) {
+    return this.nodes.get(nodeId);
   }
 }
 

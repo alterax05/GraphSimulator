@@ -1,12 +1,10 @@
 import { WebSocketServer } from "ws";
 import UrlParser from "url";
 import SocketUtils, { Command } from "../utils/socketUtils";
-import { Client } from "../types/socket";
 import WebSocketService from "../service/websocket";
 import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import ClientFilterUtils from "../utils/clientFilterUtils";
 
-export const clients: Map<string, Client> = new Map();
 const wsServer = new WebSocketServer({ noServer: true });
 const wsService = new WebSocketService();
 
@@ -49,7 +47,7 @@ wsServer.on("connection", async (ws, request) => {
     return ws.close();
   }
   // prevent access for clients with already existing id
-  if (clients.has(id)) {
+  if (wsService.graph.hasNode(id)) {
     ws.send(JSON.stringify({ message: "id already exists" }));
     return ws.close();
   }
@@ -60,18 +58,18 @@ wsServer.on("connection", async (ws, request) => {
   }
 
   // register client
-  const newClient = { id, ws, subscriptions: [], neighbours: [] };
-  clients.set(id, newClient);
+  const newClient = wsService.createClient(id, ws);
   console.log("new connection with id: ", id);
 
-  // publish realtime users list to clients subscribed to the topic
+  // publish realtime data to clients subscribed to the topic
   wsService.publishRealtimeUsersList();
   wsService.publishRealtimeAction(newClient, { message: "New Connection" });
+  wsService.publishRealtimeGraph();
 
   // handle different type of messages
-  ws.on("message", message => {
+  ws.on("message", (message) => {
     const messageData = SocketUtils.parseMessage(message);
-    const client = clients.get(id);
+    const client = wsService.graph.getNode(id);
     if (!client) return;
 
     if (!messageData) {
@@ -88,7 +86,7 @@ wsServer.on("connection", async (ws, request) => {
 
     if (messageData.to) {
       // don't forward the message if the recipient list contains invalid ids
-      if (!messageData.to.every(id => clients.has(id))) {
+      if (!messageData.to.every((id) => wsService.graph.hasNode(id))) {
         return ws.send(
           JSON.stringify({
             message: `Invalid client(s) in the recipient list. Use the 'list-users' to list the connected users`,
@@ -97,10 +95,9 @@ wsServer.on("connection", async (ws, request) => {
       }
 
       wsService.publishRealtimeAction(client, messageData);
+
       // send message to specified clients
       return wsService.forwardMessage(messageData);
-    } else {
-      wsService.publishRealtimeAction(client, messageData);
     }
 
     if (messageData.command === Command.ListUsers) {
@@ -119,19 +116,29 @@ wsServer.on("connection", async (ws, request) => {
       return wsService.setNeighbours(client, messageData);
     }
 
+    if (messageData.command === Command.RealtimeGraph) {
+      return wsService.subscribeToRealtimeGraph(client);
+    }
+
+    if (messageData.command === Command.GetGraph) {
+      return wsService.sendGraph(client);
+    }
+
     return ws.send(JSON.stringify({ message: "Invalid message" }));
   });
 
   ws.on("close", () => {
-    if (!clients.get(id)) return;
+    if (!wsService.graph.hasNode(id)) return;
 
     // publish realtime users list to clients subscribed to the topic
-    wsService.publishRealtimeAction(clients.get(id)!, {
+    wsService.publishRealtimeAction(wsService.graph.getNode(id)!, {
       message: "Disconnected",
     });
 
-    clients.delete(id);
+    wsService.graph.deleteNode(id);
+
     wsService.publishRealtimeUsersList();
+    wsService.publishRealtimeGraph();
   });
 });
 

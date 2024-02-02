@@ -14,11 +14,15 @@ export enum Command {
   RealtimeListUsers = "realtime-list-users",
   RealtimeListActions = "realtime-list-actions",
   SetNeighbours = "set-neighbours",
+  GetGraph = "get-graph",
+  RealtimeGraph = "realtime-get-graph",
 }
 
 export enum Topic {
   RealtimeListUsers = "realtime-list-users",
   RealtimeListActions = "realtime-list-actions",
+  GetGraph = "get-graph",
+  RealtimeGraph = "realtime-get-graph",
 }
 
 class SocketUtils {
