@@ -22,7 +22,16 @@ var data = {
   nodes: nodes,
   edges: edges,
 };
-var options = {};
+var options = {
+  edges: {
+    arrows: {
+      to: { enabled: true, scaleFactor: 1, type: "arrow" },
+    },
+  },
+  layout: {
+    clusterThreshold: 200,
+  },
+};
 var network = new vis.Network(container, data, options);
 
 const randomId = Math.floor(Math.random() * 10000);
@@ -37,53 +46,32 @@ const ws = new WebSocket(
 
 ws.onopen = () => {
   console.log("connected");
-  ws.send(JSON.stringify({ command: "realtime-list-users" }));
+  ws.send(JSON.stringify({ command: "realtime-get-graph" }));
   ws.send(JSON.stringify({ command: "realtime-list-actions" }));
 };
 ws.onmessage = (message) => {
   console.log(message.data);
   const data = JSON.parse(message.data);
 
-  if (data.nodes) {
-    updateNodes(data.nodes);
+  if (data.graph) {
+    updateNodes(data.graph);
   } else if (data.action) {
     updateTable(data);
   }
 };
 
-const updateNodes = (newNodes) => {
-  if (newNodes) {
+/* adjacency list is like [["B1",[]],["B2",["B1"]],["B3",[]],["inspector6948",[]]] */
+const updateNodes = (graph) => {
+  if (graph) {
     // search and delete old nodes and edges
     nodes.forEach((node) => {
-      if (!newNodes.find((newNode) => newNode.id == node.id)) {
+      if (!graph.find((n) => n[0] === node.id)) {
         nodes.remove(node.id);
 
-        // remove related edges
+        // remove edges
         edges.forEach((edge) => {
-          if (edge.from == node.id || edge.to == node.id) {
+          if (edge.from === node.id || edge.to === node.id) {
             edges.remove(edge.id);
-          }
-        });
-      }
-    });
-
-    // add new nodes
-    newNodes.forEach((newNode) => {
-      if (!nodes.get(newNode.id) && !newNode.id.startsWith("inspector")) {
-        nodes.add({ id: newNode.id, label: newNode.id });
-      }
-    });
-
-    // add new edges
-    newNodes.forEach((newNode) => {
-      if (newNode.neighbours) {
-        newNode.neighbours.forEach((neighbour) => {
-          if (!edges.get(`${newNode.id}-${neighbour}`)) {
-            edges.add({
-              id: `${newNode.id}-${neighbour}`,
-              from: newNode.id,
-              to: neighbour,
-            });
           }
         });
       }
@@ -91,13 +79,48 @@ const updateNodes = (newNodes) => {
 
     // remove old edges
     edges.forEach((edge) => {
-      // check if "from" node has the "to" in the neighbours
-      const fromNode = newNodes.find((node) => node.id == edge.from);
-      if (!fromNode) {
+      graph.forEach((node) => {
+        if (!node[1].includes(edge.from) || !node[1].includes(edge.to)) {
+          edges.remove(edge.id);
+        }
+      });
+    });
+
+    // add new nodes
+    graph.forEach((node) => {
+      if (!nodes.get(node[0]) && !node[0].startsWith("inspector")) {
+        nodes.add({ id: node[0], label: node[0] });
+      }
+
+      // add new edges
+      node[1].forEach((adjacentNode) => {
+        if (
+          !edges
+            .get()
+            .find((edge) => edge.from === node[0] && edge.to === adjacentNode)
+        ) {
+          edges.add({ from: node[0], to: adjacentNode });
+        }
+      });
+    });
+
+    // add new edges
+    edges.forEach((edge) => {
+      if (
+        !graph.find(
+          (node) => node[0] === edge.from && node[1].includes(edge.to)
+        )
+      ) {
         edges.remove(edge.id);
-      } else if (
-        !fromNode.neighbours ||
-        !fromNode.neighbours.includes(edge.to)
+      }
+    });
+
+    // remove old edges
+    edges.forEach((edge) => {
+      if (
+        !graph.find(
+          (node) => node[0] === edge.from && node[1].includes(edge.to)
+        )
       ) {
         edges.remove(edge.id);
       }

@@ -84,6 +84,8 @@ wsServer.on("connection", async (ws, request) => {
       return;
     }
 
+    wsService.publishRealtimeAction(client, messageData);
+
     if (messageData.to) {
       // don't forward the message if the recipient list contains invalid ids
       if (!messageData.to.every((id) => wsService.graph.hasNode(id))) {
@@ -93,8 +95,6 @@ wsServer.on("connection", async (ws, request) => {
           })
         );
       }
-
-      wsService.publishRealtimeAction(client, messageData);
 
       // send message to specified clients
       return wsService.forwardMessage(messageData);
