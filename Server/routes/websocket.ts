@@ -24,7 +24,17 @@ wsServer.on("connection", async (ws, request) => {
   // parse url to get query params
   const { query } = UrlParser.parse(request.url, true);
   const id = query.id;
-  const ip = request.socket.remoteAddress;
+  
+  let ip: string;
+  if (request.headers["x-forwarded-for"]) {
+    if(typeof request.headers["x-forwarded-for"] === "string")
+      ip = request.headers["x-forwarded-for"].split(",")[0];
+    else
+      ip = request.headers["x-forwarded-for"][0];
+  } else {
+    ip = request.socket.remoteAddress || "";
+  }
+
   if (!ip) {
     ws.send(JSON.stringify({ message: "IP not recognized" }));
     return ws.close();
