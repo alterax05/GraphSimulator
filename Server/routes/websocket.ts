@@ -67,7 +67,7 @@ wsServer.on("connection", async (ws, request) => {
   wsService.publishRealtimeGraph();
 
   // handle different type of messages
-  ws.on("message", (message) => {
+  ws.on("message", message => {
     const messageData = SocketUtils.parseMessage(message);
     const client = wsService.graph.getNode(id);
     if (!client) return;
@@ -88,7 +88,7 @@ wsServer.on("connection", async (ws, request) => {
 
     if (messageData.to) {
       // don't forward the message if the recipient list contains invalid ids
-      if (!messageData.to.every((id) => wsService.graph.hasNode(id))) {
+      if (!messageData.to.every(id => wsService.graph.hasNode(id))) {
         return ws.send(
           JSON.stringify({
             message: `Invalid client(s) in the recipient list. Use the 'list-users' to list the connected users`,
@@ -113,7 +113,10 @@ wsServer.on("connection", async (ws, request) => {
     }
 
     if (messageData.command === Command.SetNeighbours) {
-      return wsService.setNeighbours(client, messageData);
+      wsService.setNeighbours(client, messageData);
+      wsService.publishRealtimeUsersList();
+      wsService.publishRealtimeGraph();
+      return;
     }
 
     if (messageData.command === Command.RealtimeGraph) {
@@ -127,16 +130,17 @@ wsServer.on("connection", async (ws, request) => {
     return ws.send(JSON.stringify({ message: "Invalid message" }));
   });
 
-  ws.on("close", () => {
-    if (!wsService.graph.hasNode(id)) return;
+  ws.on("close", (code, reason) => {
+    const client = wsService.getClient(id);
+    if (!client || !wsService.isClientConnected(client)) return;
+
+    wsService.removeClient(client);
 
     // publish realtime users list to clients subscribed to the topic
-    wsService.publishRealtimeAction(wsService.graph.getNode(id)!, {
-      message: "Disconnected",
+    wsService.publishRealtimeAction(client, {
+      // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
+      message: `Disconnected with code: ${code}`,
     });
-
-    wsService.graph.deleteNode(id);
-
     wsService.publishRealtimeUsersList();
     wsService.publishRealtimeGraph();
   });
