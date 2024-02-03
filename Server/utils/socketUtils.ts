@@ -4,6 +4,7 @@ import z from "zod";
 
 const messageScheme = z.object({
   to: z.array(z.string()).optional(),
+  from: z.string().optional(),
   message: z.string().optional(),
   command: z.string().optional(),
   neighbours: z.array(z.string()).optional(),

@@ -93,6 +93,8 @@ wsServer.on("connection", async (ws, request) => {
       );
       return;
     }
+    
+    messageData.from = id;
 
     wsService.publishRealtimeAction(client, messageData);
 

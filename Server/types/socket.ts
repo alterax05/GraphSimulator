@@ -14,6 +14,7 @@ export interface Edge {
 
 export interface ClientMessage {
   to?: string[];
+  from?: string;
   message?: string;
   command?: string;
   neighbours?: string[];
