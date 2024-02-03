@@ -4,53 +4,40 @@ import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.util.Scanner;
 import java.util.List;
+import com.google.gson.Gson;
 
 public class Main {
 
-    public static void main(String[] args) throws InterruptedException, IOException {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Inserisci l'ID del nodo: ");
         String nodeId = scanner.next();
 
+        WebSocketListener listener = new WebSocketListener();
         HttpClient client = HttpClient.newHttpClient();
         WebSocket webSocket = client.newWebSocketBuilder()
-                .buildAsync(URI.create("wss://test-tpsi.barsanti.edu.it?id="+nodeId), new WebSocketListener()).join();
-        System.out.println("Connessione effettuata!");
+                .buildAsync(URI.create("wss://test-tpsi.barsanti.edu.it?id="+nodeId), listener).join();
 
-        while (true) {
-            synchronized (System.out)
-            {
-                System.out.print("Messaggio da inviare ai vicini: ");
-            }
-
-            String message = "";
+        while (!listener.isClosed) {
+            String message;
+            System.out.print("Messaggio da inviare ai vicini: ");
             do{
                 message = scanner.nextLine();
 
-            }while(message=="");
+            }while(message.isEmpty());
 
-            synchronized (System.out)
-            {
-                System.out.print("Inserisci i vicini separati da una virgola:");
-            }
-
-            String neighborsString = "";
+            String neighborsString;
+            System.out.print("Inserisci i vicini separati da una virgola:");
             do{
                 neighborsString = scanner.nextLine().replaceAll(" ", "");
-            }while(neighborsString=="");
+            }while(neighborsString.isEmpty());
 
             List<String> neighbors = List.of(neighborsString.split(","));
-            System.out.println("Resoconto, vicini: " + neighborsString + ", messaggio: " + message);
-            StringBuilder jsonMessage = new StringBuilder("{\"message\": \"" + message + "\", \"id\": \"" + nodeId + "\", \"to\": [");;
-            for (int i = 0; i < neighbors.size(); i++) {
-                jsonMessage.append("\"").append(neighbors.get(i)).append("\"");
-                if (i != neighbors.size()-1) {
-                    jsonMessage.append(",");
-                }
-            }
-            jsonMessage.append("]}");
-
-            webSocket.sendText(jsonMessage.toString(), true);
+            Message messageObject = new Message(message, null, neighbors.toArray(new String[0]),null);
+            Gson gson = new Gson();
+            String json = gson.toJson(messageObject);
+            System.out.println("Resoconto: vicini: " + neighborsString + ", messaggio: " + message);
+            webSocket.sendText(json, true);
         }
     }
 }
