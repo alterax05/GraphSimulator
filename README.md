@@ -38,7 +38,7 @@ Download the repository and setup the <b>serverUrl</b> string in the Main.java f
 
 ```
 {
-    "command": "list-users",
+    "command": "list-users"
 }
 ```
 
@@ -55,7 +55,7 @@ Download the repository and setup the <b>serverUrl</b> string in the Main.java f
 
 ```
 {
-    "command": "get-graph",
+    "command": "get-graph"
 }
 ```
 
@@ -63,7 +63,7 @@ Download the repository and setup the <b>serverUrl</b> string in the Main.java f
 
 ```
 {
-    "command": "realtime-list-users",
+    "command": "realtime-list-users"
 }
 ```
 
@@ -71,7 +71,7 @@ Download the repository and setup the <b>serverUrl</b> string in the Main.java f
 
 ```
 {
-    "command": "realtime-list-actions",
+    "command": "realtime-list-actions"
 }
 ```
 
@@ -79,6 +79,6 @@ Download the repository and setup the <b>serverUrl</b> string in the Main.java f
 
 ```
 {
-    "command": "realtime-get-graph",
+    "command": "realtime-get-graph"
 }
 ```
