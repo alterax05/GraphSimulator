@@ -31,17 +31,16 @@ public class Main {
 
             synchronized (System.out)
             {
-                System.out.print("Inserisci i vicini separati da una virgola e senza spazi: ");
+                System.out.print("Inserisci i vicini separati da una virgola:");
             }
 
             String neighborsString = "";
             do{
-                neighborsString = scanner.nextLine();
+                neighborsString = scanner.nextLine().replaceAll(" ", "");
             }while(neighborsString=="");
 
-            System.out.println("Resoconto: " + neighborsString + " " + message);
-
             List<String> neighbors = List.of(neighborsString.split(","));
+            System.out.println("Resoconto, vicini: " + neighborsString + ", messaggio: " + message);
             StringBuilder jsonMessage = new StringBuilder("{\"message\": \"" + message + "\", \"id\": \"" + nodeId + "\", \"to\": [");;
             for (int i = 0; i < neighbors.size(); i++) {
                 jsonMessage.append("\"").append(neighbors.get(i)).append("\"");
