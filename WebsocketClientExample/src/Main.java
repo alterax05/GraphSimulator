@@ -8,13 +8,16 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) throws InterruptedException, IOException {
+        // TODO: inserire l'URL del server nel formato wss://dominio
+        String serverUrl = "";
+
         Scanner scanner = new Scanner(System.in);
         System.out.print("Inserisci l'ID del nodo: ");
         String nodeId = scanner.next();
 
         HttpClient client = HttpClient.newHttpClient();
         WebSocket webSocket = client.newWebSocketBuilder()
-                .buildAsync(URI.create("wss://test-tpsi.barsanti.edu.it?id="+nodeId), new WebSocketListener()).join();
+                .buildAsync(URI.create(serverUrl + "?id=" + nodeId), new WebSocketListener()).join();
         System.out.println("Connessione effettuata!");
 
         while (true) {
