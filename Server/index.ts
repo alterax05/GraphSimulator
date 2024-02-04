@@ -10,6 +10,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "/public/index.html"));
 });
 
+app.get("/test", (req, res) => {
+  res.send("HELLo");
+});
+
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
   console.log(`Listening on port ${port}!`);
@@ -17,7 +21,7 @@ const server = app.listen(port, () => {
 
 // forward web socket requests to wsServer
 server.on("upgrade", (request, socket, head) => {
-  wsServer.handleUpgrade(request, socket, head, (socket) => {
+  wsServer.handleUpgrade(request, socket, head, socket => {
     wsServer.emit("connection", socket, request);
   });
 });
