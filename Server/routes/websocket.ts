@@ -77,7 +77,7 @@ wsServer.on("connection", async (ws, request) => {
   wsService.publishRealtimeGraph();
 
   // handle different type of messages
-  ws.on("message", message => {
+  ws.on("message", (message) => {
     const messageData = SocketUtils.parseMessage(message);
     const client = wsService.graph.getNode(id);
     if (!client) return;
@@ -100,7 +100,7 @@ wsServer.on("connection", async (ws, request) => {
 
     if (messageData.to) {
       // don't forward the message if the recipient list contains invalid ids
-      if (!messageData.to.every(id => wsService.graph.hasNode(id))) {
+      if (!messageData.to.every((id) => wsService.graph.hasNode(id))) {
         return ws.send(
           JSON.stringify({
             message: `Invalid client(s) in the recipient list. Use the 'list-users' to list the connected users`,
