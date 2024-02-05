@@ -11,10 +11,12 @@ public class Main {
         System.out.print("Inserisci l'ID del nodo: ");
         String nodeId = scanner.next();
 
+        String serverUrl = "wss://test-tpsi.barsanti.edu.it";
+
         WebSocketListener listener = new WebSocketListener();
         HttpClient client = HttpClient.newHttpClient();
         WebSocket webSocket = client.newWebSocketBuilder()
-                .buildAsync(URI.create("wss://test-tpsi.barsanti.edu.it?id="+nodeId), listener).join();
+                .buildAsync(URI.create(serverUrl + "?id=" + nodeId), listener).join();
 
         while (!listener.isClosed) {
             String message;
@@ -30,6 +32,7 @@ public class Main {
                 neighborsString = scanner.nextLine().replaceAll(" ", "");
             }while(neighborsString.isEmpty());
 
+            //Set neighbours
             List<String> neighbors = List.of(neighborsString.split(","));
             Message messageObject = new Message(message, null, neighbors.toArray(new String[0]),null, null);
             Gson gson = new Gson();
