@@ -19,6 +19,15 @@ class Graph {
     }
   }
 
+  public isNeighbour(fromNode: string, toNode: string): boolean {
+    if(fromNode === toNode) return true;
+    const neighbours = this.adjacencyList.get(fromNode);
+    if (neighbours) {
+      return neighbours.includes(toNode);
+    }
+    return false;
+  }
+
   public addNeighbour(fromNode: string, toNode: string): void {
     if (!this.nodes.has(fromNode) || !this.nodes.has(toNode)) return;
 
