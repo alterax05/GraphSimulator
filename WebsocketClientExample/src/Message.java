@@ -4,12 +4,14 @@ public class Message implements Serializable {
     private final String from;
     private final String[] to;
     private final String command;
+    private final String[] neighbors;
 
-    public Message(String message, String from, String[] to, String command) {
+    public Message(String message, String from, String[] to, String command, String[] neighbors) {
         this.message = message;
         this.from = from;
         this.to = to;
         this.command = command;
+        this.neighbors = neighbors;
     }
 
     public String getMessage() {
@@ -26,5 +28,9 @@ public class Message implements Serializable {
 
     public String getCommand() {
         return command;
+    }
+
+    public String[] getNeighbors() {
+        return neighbors;
     }
 }

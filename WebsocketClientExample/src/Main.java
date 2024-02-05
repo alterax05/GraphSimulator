@@ -1,4 +1,3 @@
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -7,7 +6,6 @@ import java.util.List;
 import com.google.gson.Gson;
 
 public class Main {
-
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Inserisci l'ID del nodo: ");
@@ -33,11 +31,19 @@ public class Main {
             }while(neighborsString.isEmpty());
 
             List<String> neighbors = List.of(neighborsString.split(","));
-            Message messageObject = new Message(message, null, neighbors.toArray(new String[0]),null);
+            Message messageObject = new Message(message, null, neighbors.toArray(new String[0]),null, null);
             Gson gson = new Gson();
-            String json = gson.toJson(messageObject);
+
+            //Non posso settare me stesso come vicino
+            if(!neighbors.contains(nodeId)) {
+                Message setNeighbors = new Message(null, null, null, "set-neighbours", neighbors.toArray(new String[0]));
+                String SetNeighborsJSON = gson.toJson(setNeighbors);
+                webSocket.sendText(SetNeighborsJSON, true);
+            }
+
+            String MessageJSON = gson.toJson(messageObject);
             System.out.println("Resoconto: vicini: " + neighborsString + ", messaggio: " + message);
-            webSocket.sendText(json, true);
+            webSocket.sendText(MessageJSON, true);
         }
     }
 }
