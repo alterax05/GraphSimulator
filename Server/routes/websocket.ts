@@ -103,11 +103,19 @@ wsServer.on("connection", async (ws, request) => {
       if (!messageData.to.every((id) => wsService.graph.hasNode(id))) {
         return ws.send(
           JSON.stringify({
-            message: `Invalid client(s) in the recipient list. Use the 'list-users' to list the connected users`,
+            message: `Invalid client(s) in the recipient list. Use the 'list-users' command to list the connected users`,
           })
         );
       }
 
+      if(!messageData.to.every((id) => wsService.graph.isNeighbour(client.id, id))){
+        return ws.send(
+          JSON.stringify({
+            message: `Invalid client(s) in the recipient list. Use the 'set-neighbours' command to set the neighbours of the client.`,
+          })
+        );
+      }
+    
       // send message to specified clients
       return wsService.forwardMessage(messageData);
     }

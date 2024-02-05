@@ -7,10 +7,12 @@ class WebSocketService {
   graph = new Graph();
 
   public forwardMessage(message: ClientMessage) {
-    return message.to?.forEach(destination => {
-      const client = this.graph.getNodes().get(destination);
-      if (client) {
-        client.ws.send(JSON.stringify(message));
+    return message.to?.forEach((destination) => {
+      if (this.graph.isNeighbour(message.from!, destination)) {
+        const client = this.graph.getNodes().get(destination);
+        if (client) {
+          client.ws.send(JSON.stringify(message));
+        }
       }
     });
   }
@@ -64,17 +66,17 @@ class WebSocketService {
 
   public publishRealtimeUsersList() {
     const subscribedUsers = Array.from(this.graph.getNodes().values()).filter(
-      client => client.subscriptions.includes(Topic.RealtimeListUsers)
+      (client) => client.subscriptions.includes(Topic.RealtimeListUsers)
     );
 
-    subscribedUsers.forEach(client => this.listUsers(client));
+    subscribedUsers.forEach((client) => this.listUsers(client));
   }
 
   public publishRealtimeAction(sender: Client, senderMessage: ClientMessage) {
     const subscribedUsers = Array.from(this.graph.getNodes().values()).filter(
-      client => client.subscriptions.includes(Topic.RealtimeListActions)
+      (client) => client.subscriptions.includes(Topic.RealtimeListActions)
     );
-    subscribedUsers.forEach(client => {
+    subscribedUsers.forEach((client) => {
       client.ws.send(
         JSON.stringify({
           from: sender.id,
@@ -86,10 +88,10 @@ class WebSocketService {
 
   public publishRealtimeGraph() {
     const subscribedUsers = Array.from(this.graph.getNodes().values()).filter(
-      client => client.subscriptions.includes(Topic.RealtimeGraph)
+      (client) => client.subscriptions.includes(Topic.RealtimeGraph)
     );
 
-    subscribedUsers.forEach(client => this.sendGraph(client));
+    subscribedUsers.forEach((client) => this.sendGraph(client));
   }
 
   public sendGraph(sender: Client) {
@@ -113,6 +115,10 @@ class WebSocketService {
 
   public getClient(id: string) {
     return this.graph.getNode(id);
+  }
+
+  public isNeighbours(client: Client, target: Client) {
+    return client.neighbours.includes(target.id);
   }
 }
 
