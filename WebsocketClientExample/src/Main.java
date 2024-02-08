@@ -11,7 +11,7 @@ public class Main {
         System.out.print("Inserisci l'ID del nodo: ");
         String nodeId = scanner.next();
 
-        String serverUrl = "wss://test-tpsi.barsanti.edu.it";
+        String serverUrl = "wss://graphsimulator.barsanti.edu.it";
 
         WebSocketListener listener = new WebSocketListener();
         HttpClient client = HttpClient.newHttpClient();

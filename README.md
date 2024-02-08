@@ -6,7 +6,7 @@ This repository contains the code used in TPSI lessons to simulate different gra
 
 ### Backend
 
-The backend is created using typescript, Express.js and the WS package. The service is hosted on the Plesk platform of the school's servers at [https://test-tpsi.barsanti.edu.it](https://test-tpsi.barsanti.edu.it)
+The backend is created using typescript, Express.js and the WS package. The service is hosted on the Plesk platform of the school's servers at [https://graphsimulator.barsanti.edu.it](https://graphsimulator.barsanti.edu.it)
 
 Links for further informations about configurations:
 
