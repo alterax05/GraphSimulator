@@ -5,6 +5,7 @@ import java.util.concurrent.CompletionStage;
 public class WebSocketListener implements WebSocket.Listener{
         private static final String ANSI_RESET = "\u001B[0m";
         private static final String ANSI_GREEN = "\u001B[32m";
+        private Coda<String> queueOfMessages;
 
         public boolean isClosed = false;
 
@@ -18,8 +19,7 @@ public class WebSocketListener implements WebSocket.Listener{
         public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
             Gson gson = new Gson();
             Message message = gson.fromJson(data.toString(), Message.class);
-            System.out.print("\033[0;34m");
-            System.out.println(ANSI_GREEN + "\n\tMessaggio ricevuto: \""+message.getMessage()+"\" da "+message.getFrom() + ANSI_RESET);
+            queueOfMessages.push("\033[0;34m" +ANSI_GREEN + "\n\tMessaggio ricevuto: \""+message.getMessage()+"\" da "+message.getFrom() + ANSI_RESET);
             return WebSocket.Listener.super.onText(webSocket, data, last);
         }
 
@@ -28,5 +28,10 @@ public class WebSocketListener implements WebSocket.Listener{
             System.out.println("Connessione chiusa");
             isClosed = true;
             return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
+        }
+
+        public Coda<String> getQueueOfMessages()
+        {
+            return queueOfMessages;
         }
 }

@@ -47,6 +47,12 @@ public class Main {
             String MessageJSON = gson.toJson(messageObject);
             System.out.println("Resoconto [Vicini: " + neighborsString + ", messaggio: " + message + " ]");
             webSocket.sendText(MessageJSON, true);
+
+            Coda<String> queueOfMessages = listener.getQueueOfMessages();
+            while(!queueOfMessages.isEmpty())
+            {
+                System.out.println(queueOfMessages.pop());
+            }
         }
     }
 }
