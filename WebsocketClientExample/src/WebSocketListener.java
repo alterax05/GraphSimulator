@@ -7,6 +7,11 @@ public class WebSocketListener implements WebSocket.Listener{
         private static final String ANSI_GREEN = "\u001B[32m";
         private Coda<String> queueOfMessages;
 
+        public WebSocketListener()
+        {
+            super();
+            queueOfMessages = new Coda<String>();
+        }
         public boolean isClosed = false;
 
         @Override
