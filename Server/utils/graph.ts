@@ -1,4 +1,4 @@
-import { Client, Edge } from "../types/socket";
+import { Client } from "../types/socket";
 
 class Graph {
   private nodes: Map<string, Client>;
@@ -19,8 +19,8 @@ class Graph {
     }
   }
 
-  public isNeighbour(fromNode: string, toNode: string): boolean {
-    if(fromNode === toNode) return true;
+  public areNeighbours(fromNode: string, toNode: string): boolean {
+    if (fromNode === toNode) return true;
     const neighbours = this.adjacencyList.get(fromNode);
     if (neighbours) {
       return neighbours.includes(toNode);
