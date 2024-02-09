@@ -45,7 +45,7 @@ public class Main {
             }
 
             String MessageJSON = gson.toJson(messageObject);
-            System.out.println("Resoconto: vicini: " + neighborsString + ", messaggio: " + message);
+            System.out.println("Resoconto [Vicini: " + neighborsString + ", messaggio: " + message + " ]");
             webSocket.sendText(MessageJSON, true);
         }
     }
