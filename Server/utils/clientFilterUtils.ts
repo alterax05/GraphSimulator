@@ -8,6 +8,7 @@ class ClientFilterUtils {
 
     return idPattern.test(id);
   }
+  
   static getIpRequest(req: IncomingMessage): string {
     let ip: string;
     if (req.headers["x-forwarded-for"]) {

@@ -40,7 +40,7 @@ class WebSocketService {
   }
 
   public createClient(id: string, ws: WebSocket) {
-    const newClient = { id, ws, subscriptions: [], neighbours: [] };
+    const newClient = { id, ws, subscriptions: [], neighbours: [], failedPings: 0 };
     this.graph.addNode(newClient);
     return newClient;
   }
@@ -103,8 +103,15 @@ class WebSocketService {
     );
   }
 
-  public removeClient(client: Client) {
+  //remove client from graph and clear heartbeat
+  public removeClient(client: Client, heartbeat: NodeJS.Timeout, code: number) {
     this.graph.deleteNode(client.id);
+    clearInterval(heartbeat);
+      // publish realtime users list to clients subscribed to the topic
+    this.publishRealtimeAction(client, {
+      // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
+      message: `Disconnected with code: ${code}`,
+    });
     this.publishRealtimeUsersList();
     this.publishRealtimeGraph();
   }

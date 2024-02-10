@@ -24,7 +24,7 @@ wsServer.on("connection", async (ws, request) => {
   // parse url to get query params
   const { query } = UrlParser.parse(request.url, true);
   const id = query.id;
-  
+
   const ip = ClientFilterUtils.getIpRequest(request);
 
   if (!ip) {
@@ -63,6 +63,17 @@ wsServer.on("connection", async (ws, request) => {
   const newClient = wsService.createClient(id, ws);
   console.log("new connection with id: ", id);
 
+  // handle zombie connections (clients that don't close the connection properly)
+  const heartbeat = setInterval(() => {
+    newClient.ws.ping();
+    if (newClient.failedPings > 3) {
+      newClient.ws.terminate();
+      wsService.removeClient(newClient, heartbeat, 1006);
+      console.log("Terminated connection with client: ", id);
+    }
+    newClient.failedPings++;
+  }, 3000);
+
   // publish realtime data to clients subscribed to the topic
   wsService.publishRealtimeUsersList();
   wsService.publishRealtimeAction(newClient, { message: "New Connection" });
@@ -70,7 +81,7 @@ wsServer.on("connection", async (ws, request) => {
 
   // handle different type of messages
   ws.on("message", (message) => {
-    const messageData = SocketUtils.parseMessage(message);
+    const messageData = SocketUtils.parseMessage(message, id);
     const client = wsService.getClient(id);
     if (!client) return;
 
@@ -148,16 +159,13 @@ wsServer.on("connection", async (ws, request) => {
   ws.on("close", (code, reason) => {
     const client = wsService.getClient(id);
     if (!client || !wsService.isClientConnected(client)) return;
+    wsService.removeClient(client, heartbeat, code);
+  });
 
-    wsService.removeClient(client);
-
-    // publish realtime users list to clients subscribed to the topic
-    wsService.publishRealtimeAction(client, {
-      // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
-      message: `Disconnected with code: ${code}`,
-    });
-    wsService.publishRealtimeUsersList();
-    wsService.publishRealtimeGraph();
+  ws.on("pong", () => {
+    const client = wsService.getClient(id);
+    if (!client) return;
+    client.failedPings = 0;
   });
 });
 

@@ -5,6 +5,7 @@ export interface Client {
   ws: WebSocket;
   subscriptions: string[];
   neighbours: string[];
+  failedPings: number;
 }
 
 export interface Edge {
