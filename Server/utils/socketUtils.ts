@@ -27,10 +27,11 @@ export enum Topic {
 }
 
 class SocketUtils {
-  static parseMessage(message: RawData) {
+  static parseMessage(message: RawData, id: string) {
     try {
       const json = JSON.parse(message.toString());
       const messageData = messageScheme.parse(json);
+      messageData.from = id;
       return messageData as ClientMessage;
     } catch (e) {
       return null;
