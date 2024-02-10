@@ -8,7 +8,7 @@ class WebSocketService {
 
   public forwardMessage(message: ClientMessage) {
     return message.to?.forEach((destination) => {
-      if (this.graph.isNeighbour(message.from!, destination)) {
+      if (this.graph.areNeighbours(message.from!, destination)) {
         const client = this.graph.getNodes().get(destination);
         if (client) {
           client.ws.send(JSON.stringify(message));
@@ -117,7 +117,7 @@ class WebSocketService {
     return this.graph.getNode(id);
   }
 
-  public isNeighbours(client: Client, target: Client) {
+  public areNeighbours(client: Client, target: Client) {
     return client.neighbours.includes(target.id);
   }
 }
