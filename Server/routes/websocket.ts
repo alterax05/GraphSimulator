@@ -83,7 +83,7 @@ wsServer.on("connection", async (ws, request) => {
   ws.on("message", (message) => {
     const messageData = SocketUtils.parseMessage(message, id);
     const client = wsService.getClient(id);
-    if (!client) return;
+    if  (!client) return;
 
     if (!messageData) {
       ws.send(JSON.stringify({ message: "Invalid message sintax" }));
@@ -101,7 +101,7 @@ wsServer.on("connection", async (ws, request) => {
       }
 
       // check if the recipient list contains invalid ids
-      if (!messageData.to.every((id) => !wsService.getClient(id))) {
+      if (!messageData.to.every((id) => wsService.getClient(id))) {
         return ws.send(
           JSON.stringify({
             message: `Invalid client(s) in the recipient list. Use the 'list-users' command to list the connected users`,
