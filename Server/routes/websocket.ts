@@ -83,7 +83,7 @@ wsServer.on("connection", async (ws, request) => {
   ws.on("message", (message) => {
     const messageData = SocketUtils.parseMessage(message, id);
     const client = wsService.getClient(id);
-    if  (!client) return;
+    if (!client) return;
 
     if (!messageData) {
       ws.send(JSON.stringify({ message: "Invalid message sintax" }));

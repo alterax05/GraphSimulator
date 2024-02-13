@@ -1,20 +1,5 @@
-// create an array with nodes
-var nodes = new vis.DataSet([
-  //   { id: 1, label: "Node 1" },
-  //   { id: 2, label: "Node 2" },
-  //   { id: 3, label: "Node 3" },
-  //   { id: 4, label: "Node 4" },
-  //   { id: 5, label: "Node 5" },
-]);
-
-// create an array with edges
-var edges = new vis.DataSet([
-  //   { from: 1, to: 3 },
-  //   { from: 1, to: 2 },
-  //   { from: 2, to: 4 },
-  //   { from: 2, to: 5 },
-  //   { from: 3, to: 3 },
-]);
+var nodes = new vis.DataSet([]);
+var edges = new vis.DataSet([]);
 
 // create a network
 var container = document.getElementById("network");
@@ -34,15 +19,26 @@ var options = {
 };
 var network = new vis.Network(container, data, options);
 
-const randomId = Math.floor(Math.random() * 10000);
-
 const currentHost = window.location.hostname;
 const currentPort = window.location.port;
 const currentProtocol = window.location.protocol == "https:" ? "wss" : "ws";
 
+const randomId = Math.floor(Math.random() * 10000);
 const ws = new WebSocket(
   `${currentProtocol}://${currentHost}:${currentPort}?id=inspector${randomId}`
 );
+
+// associate each available state to a unique color generated from the hash of the state string
+const generateStateColor = (state) => {
+  // hash function using DJB2 algorithm
+  let hash = 5381;
+  for (let i = 0; i < state.length; i++) {
+    hash = (hash * 33) ^ state.charCodeAt(i);
+  }
+  // Convert hash to a six-digit hexadecimal color
+  const color = (hash >>> 0).toString(16).padStart(6, "0");
+  return `#${color}`;
+};
 
 ws.onopen = () => {
   console.log("connected");

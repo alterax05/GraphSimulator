@@ -18,10 +18,15 @@ class WebSocketService {
   }
 
   public listUsers(senderClient: Client) {
-    const nodeIds = Array.from(this.graph.getNodes().keys());
+    const nodes = this.graph.getNodes();
+    const nodesData = Array.from(nodes.keys()).map((id) => ({
+      id,
+      state: nodes.get(id)?.state,
+    }));
+
     senderClient.ws.send(
       JSON.stringify({
-        nodes: nodeIds,
+        nodes: nodesData,
       })
     );
   }
@@ -40,7 +45,14 @@ class WebSocketService {
   }
 
   public createClient(id: string, ws: WebSocket) {
-    const newClient = { id, ws, subscriptions: [], neighbours: [], failedPings: 0 };
+    const newClient: Client = {
+      id,
+      ws,
+      subscriptions: [],
+      neighbours: [],
+      failedPings: 0,
+      state: null,
+    };
     this.graph.addNode(newClient);
     return newClient;
   }
@@ -107,7 +119,7 @@ class WebSocketService {
   public removeClient(client: Client, heartbeat: NodeJS.Timeout, code: number) {
     this.graph.deleteNode(client.id);
     clearInterval(heartbeat);
-      // publish realtime users list to clients subscribed to the topic
+    // publish realtime users list to clients subscribed to the topic
     this.publishRealtimeAction(client, {
       // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
       message: `Disconnected with code: ${code}`,

@@ -6,6 +6,7 @@ export interface Client {
   subscriptions: string[];
   neighbours: string[];
   failedPings: number;
+  state: string | null;
 }
 
 export interface Edge {
