@@ -1,10 +1,10 @@
 import java.io.Serializable;
-public class Message implements Serializable {
-    private final String message;
-    private final String from;
-    private final String[] to;
-    private final String command;
-    private final String[] neighbours;
+public class Message implements Serializable { // classe Message, dove viene specificato:
+    private final String message; // il messaggio
+    private final String from; // il mittente
+    private final String[] to; // i destinatari
+    private final String command; // il comando che il webServer deve eseguire
+    private final String[] neighbours; // i vicini
 
     public Message(String message, String from, String[] to, String command, String[] neighbors) {
         this.message = message;
