@@ -7,7 +7,7 @@ import com.google.gson.Gson;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in); // scanner utilizzato
         System.out.print("Inserisci l'ID del nodo: ");
         String nodeId = scanner.next();
 
@@ -53,6 +53,20 @@ public class Main {
             {
                 System.out.println(queueOfMessages.pop());
             }
+
+            System.out.print("Vuoi continuare a scrivere messaggi? (y/n)");
+            String continueString;
+            do{
+                continueString = scanner.nextLine();
+
+            }while(continueString.isEmpty());
+
+            if (continueString != "y") {
+                break;
+            }
         }
+
+        System.out.print("Disconnessione avvenuta");
+        webSocket.sendClose(1000, "WantToClose");
     }
 }
