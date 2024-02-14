@@ -27,7 +27,7 @@ public class Main {
             }while(message.isEmpty()); // ciclo che permette l'inserimento del campo message
 
             String neighborsString;
-            System.out.print("Inserisci i vicini separati da una virgola:");
+            System.out.print("Inserisci i vicini separati da una virgola: ");
             do{
                 neighborsString = scanner.nextLine().replaceAll(" ", "");
             }while(neighborsString.isEmpty()); // ciclo che permette l'inserimento dei vicini di questo nodo
