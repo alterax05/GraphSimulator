@@ -44,6 +44,11 @@ public class Main {
                 String SetNeighborsJSON = gson.toJson(setNeighbors); // converto l'oggetto setNeighbors di tipo Message, che serve per comunicare al server i vicini di un nodo,
                 webSocket.sendText(SetNeighborsJSON, true); // e la invio
             }
+            else
+            {
+                System.out.println("Ha inserito come vicino se stesso, operazione non valida!");
+                break;
+            }
 
             String MessageJSON = gson.toJson(messageObject);
             // converto l'oggetto messageObject in JSON, dove sono contenuti i vicini e il messaggio scritto prima
@@ -64,7 +69,7 @@ public class Main {
 
             }while(continueString.isEmpty()); // ciclo che permette l'inserimento del campo continueString
 
-            if (continueString != "y") { // controllo se l'utente, vuole continuare a scrivere messaggi
+            if (!continueString.equals("y")) { // controllo se l'utente, vuole continuare a scrivere messaggi
                 break;
             }
         }
