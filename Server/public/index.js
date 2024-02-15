@@ -2,7 +2,7 @@ var nodes = new vis.DataSet([]);
 var edges = new vis.DataSet([]);
 
 // create a network
-var container = document.getElementById("network");
+var networkElement = document.getElementById("network");
 var data = {
   nodes: nodes,
   edges: edges,
@@ -17,7 +17,7 @@ var options = {
     clusterThreshold: 200,
   },
 };
-var network = new vis.Network(container, data, options);
+var network = new vis.Network(networkElement, data, options);
 
 const currentHost = window.location.hostname;
 const currentPort = window.location.port;
@@ -28,21 +28,12 @@ const ws = new WebSocket(
   `${currentProtocol}://${currentHost}:${currentPort}?id=inspector${randomId}`
 );
 
-// associate each available state to a unique color generated from the hash of the state string
-const generateStateColor = (state) => {
-  // hash function using DJB2 algorithm
-  let hash = 5381;
-  for (let i = 0; i < state.length; i++) {
-    hash = (hash * 33) ^ state.charCodeAt(i);
-  }
-  // Convert hash to a six-digit hexadecimal color
-  const color = (hash >>> 0).toString(16).padStart(6, "0");
-  return `#${color}`;
-};
+let knownUsersList = [];
 
 ws.onopen = () => {
   console.log("connected");
   ws.send(JSON.stringify({ command: "realtime-get-graph" }));
+  ws.send(JSON.stringify({ command: "realtime-list-users" }));
   ws.send(JSON.stringify({ command: "realtime-list-actions" }));
 };
 ws.onmessage = (message) => {
@@ -51,8 +42,12 @@ ws.onmessage = (message) => {
 
   if (data.graph) {
     updateNodes(data.graph);
+    // sinchronize the graph with the known users list
+    updateUsersStates(knownUsersList);
   } else if (data.action) {
     updateTable(data);
+  } else if (data.nodes) {
+    updateUsersStates(data.nodes);
   }
 };
 
@@ -148,4 +143,72 @@ const updateTable = (data) => {
   if (oldRows.length > 50) {
     tableBody.removeChild(oldRows[oldRows.length - 1]);
   }
+};
+
+const updateUsersStates = (users) => {
+  knownUsersList = users.filter((user) => !user.id.startsWith("inspector"));
+
+  knownUsersList.forEach((user) => {
+    // get color based on the state of the user
+    const colors = generateStateColor(user.state);
+
+    // find the respective node and update its color
+    // in this function there is no need to add new nodes if they don't exist
+    if (nodes.get(user.id)) {
+      nodes.update({
+        id: user.id,
+        color: colors.background,
+        font: { color: colors.foreground },
+      });
+    }
+
+    // update legend with the unique instances of states found with their respective colors
+    const legend = document.getElementById("legend");
+
+    // add new legend elements if they don't exist
+    if (!legend.querySelector(`[data-state="${user.state}"]`)) {
+      const newLegendElement = document.createElement("div");
+      newLegendElement.dataset.state = user.state;
+      newLegendElement.style.display = "flex";
+      newLegendElement.style.alignItems = "center";
+      newLegendElement.style.margin = "5px 0";
+      newLegendElement.innerHTML = `
+        <div style="width: 20px; height: 20px; background: ${colors.background}; margin-right: 5px;"></div>
+        <span>${user.state}</span>
+      `;
+      legend.appendChild(newLegendElement);
+    }
+  });
+};
+
+// associate each available state to a unique color generated from the hash of the state string
+const generateStateColor = (state) => {
+  // default color is a light blue background with black text
+  if (!state) {
+    return {
+      background: "#87CEEB",
+      foreground: "#000000",
+    };
+  }
+
+  // hash function using DJB2 algorithm
+  let hash = 5381;
+  for (let i = 0; i < state.length; i++) {
+    hash = (hash * 33) ^ state.charCodeAt(i);
+  }
+
+  // Convert hash to a six-digit hexadecimal color
+  const backgroundColor = (hash >>> 0)
+    .toString(16)
+    .padStart(6, "0")
+    .slice(0, 6);
+
+  // generate a contrast color for the text
+  const foregroundColor =
+    parseInt(backgroundColor, 16) > 0xffffff / 2 ? "#000000" : "#ffffff";
+
+  return {
+    background: `#${backgroundColor}`,
+    foreground: foregroundColor,
+  };
 };

@@ -145,6 +145,12 @@ wsServer.on("connection", async (ws, request) => {
       return;
     }
 
+    if (messageData.command === Command.SetState) {
+      wsService.setClientState(client, messageData);
+      wsService.publishRealtimeUsersList();
+      return;
+    }
+
     if (messageData.command === Command.RealtimeGraph) {
       return wsService.subscribeToRealtimeGraph(client);
     }

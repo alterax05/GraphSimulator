@@ -139,6 +139,17 @@ class WebSocketService {
   public areNeighbours(client: Client, target: Client) {
     return client.neighbours.includes(target.id);
   }
+
+  public setClientState(client: Client, message: ClientMessage) {
+    if (!message.message) {
+      return client.ws.send(JSON.stringify({ message: "Message required" }));
+    }
+
+    client.state = message.message;
+    return client.ws.send(
+      JSON.stringify({ message: `State set to: ${message.message}` })
+    );
+  }
 }
 
 export default WebSocketService;

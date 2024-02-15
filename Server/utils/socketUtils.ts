@@ -17,6 +17,7 @@ export enum Command {
   SetNeighbours = "set-neighbours",
   GetGraph = "get-graph",
   RealtimeGraph = "realtime-get-graph",
+  SetState = "set-state",
 }
 
 export enum Topic {
