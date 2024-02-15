@@ -24,6 +24,7 @@ The repository also contains a starter project to interact with the backend serv
 Download the repository and setup the <b>serverUrl</b> string in the Main.java file to point to the school's backend.
 
 Additional info in the [Client README](./WebsocketClientExample/README.md)
+
 ## Available Actions
 
 - Send a message
@@ -52,6 +53,15 @@ Additional info in the [Client README](./WebsocketClientExample/README.md)
 }
 ```
 
+- Set state
+
+```
+{
+    "command": "set-state",
+    "message": "the state you want"
+}
+```
+
 - Get adjacency list of the network's graph
 
 ```
@@ -60,7 +70,7 @@ Additional info in the [Client README](./WebsocketClientExample/README.md)
 }
 ```
 
-- List users in realtime (receive an event each time a user connects/disconnects from the server)
+- List users in realtime (receive an event each time a user connects/disconnects from the server or it changes its state)
 
 ```
 {
