@@ -22,21 +22,23 @@ public abstract class BaseNode {
         webSocket.sendText(SetNeighborsJSON, true);
 
         // tell the server the state of the node
-        this.state = state;
-        Message setState = new Message(state, null, null, "set-state", null);
-        String setStateJSON = gson.toJson(setState);
-        webSocket.sendText(setStateJSON, true);
+        setState(state);
     }
 
     public abstract void afterSendingMessage(String message);
 
     public abstract void afterReceivingMessage(Message message);
 
+    public String getState() {
+        return state;
+    }
+
     public void setState(String state) {
         this.state = state;
         Message setState = new Message(state, null, null, "set-state", null);
         String setStateJSON = gson.toJson(setState);
         webSocket.sendText(setStateJSON, true);
+        printMessage("Stato impostato a: " + state);
     }
 
     public void sendMessage(String message, ArrayList<String> to) {
