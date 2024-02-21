@@ -16,6 +16,15 @@ public class Main {
         System.out.print("Inserisci l'ID del nodo: ");
         String nodeId = scanner.next();
 
+        String serverUrl = "wss://graphsimulator.barsanti.edu.it";
+        WebSocketListener listener = new WebSocketListener();
+        WebSocketPrinterThread webSocketThread = new WebSocketPrinterThread(listener);
+        webSocketThread.start();
+
+        HttpClient client = HttpClient.newHttpClient();
+        WebSocket webSocket = client.newWebSocketBuilder()
+                .buildAsync(URI.create(serverUrl + "?id=" + nodeId), listener).join();
+
         System.out.println("Inserisci stato iniziale: ");
         String initialState = scanner.next();
 
@@ -29,16 +38,6 @@ public class Main {
         System.out.print("Primo messaggio da inviare: ");
         String message = scanner.nextLine();
 
-        // da qui in poi non si può prendere più niente in input dalla console
-        String serverUrl = "wss://graphsimulator.barsanti.edu.it";
-        WebSocketListener listener = new WebSocketListener();
-        WebSocketPrinterThread webSocketThread = new WebSocketPrinterThread(listener);
-        webSocketThread.start();
-
-        HttpClient client = HttpClient.newHttpClient();
-        WebSocket webSocket = client.newWebSocketBuilder()
-                .buildAsync(URI.create(serverUrl + "?id=" + nodeId), listener).join();
-
         Node node = new Node(nodeId, webSocket, initialState, neighbours);
         listener.setNode(node);
 
@@ -46,13 +45,13 @@ public class Main {
 
 
         // TODO: scrivere QUI il codice usando la variabile "node" (es. invio il messaggio iniziale se sono initiator)
-        //  utilizzare e IMPLEMENTARE i metodi "afterSendingMessage" e "afterReceivingMessage" della classe Node
+        //  sono forniti i metodi "sendMessage", "afterSendingMessage" e "afterReceivingMessage" della classe Node
         //  afterSendingMessage inviene chiamato automaticamente dopo aver inviato un messaggio con il metodo "sendMessage"
-        //  utilizzare il metodo "sendMessage" della classe Node per inviare messaggi
         //  afterReceivingMessage viene chiamato automaticamente alla ricezione dei messaggi
         //  i messaggi ricevuti dal Server in VERDE non effettuano il metodo "afterReceivingMessage"
+        //  Nota: i messaggi in VERDE sono gestiti da un thread separato e potrebbero mischiarsi a quelli blu
         //  i log BLU in console derivano dal metodo "printMessage" della classe BaseNode da cui estende Node
-        //  NON TOCCARE LA CARTELLA DI CORE
+        //  GUARDARE LA CARTELLA DI CORE PER CAPIRE COSA FANNO LE COSE
 
         String state = node.getState();
         if(state.equals("initiator")) {
