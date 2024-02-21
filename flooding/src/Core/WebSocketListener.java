@@ -37,7 +37,7 @@ public class WebSocketListener implements WebSocket.Listener {
             if(sender == null) sender = "Server";
 
             // dopo la conversione il messaggio viene inserito nella coda chiamata queueOfMessages
-            queueOfMessages.push("\033[0;34m" +ANSI_GREEN + "\n\tMessaggio ricevuto: \""+message.getMessage()+"\" da "+ sender + ANSI_RESET);
+            queueOfMessages.push("\033[0;34m" +ANSI_GREEN + "\n\tMessaggio ricevuto da " + sender + ": " + message.getMessage() + ANSI_RESET);
 
             // gestisco il messaggio se il mittente non è il server
             if (message.getFrom() != null) {
