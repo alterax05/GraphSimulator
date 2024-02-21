@@ -110,17 +110,18 @@ wsServer.on("connection", async (ws, request) => {
       }
 
       // check if the recipient list contains invalid neighbours
-      if (
-        !messageData.to.every((id) =>
-          wsService.graph.areNeighbours(client.id, id)
-        )
-      ) {
-        return ws.send(
-          JSON.stringify({
-            message: `Invalid client(s) in the recipient list. Use the 'set-neighbours' command to set the neighbours of the client.`,
-          })
-        );
-      }
+      // TODO: disabled to keep the java client simple
+      // if (
+      //   !messageData.to.every((id) =>
+      //     wsService.graph.areNeighbours(client.id, id)
+      //   )
+      // ) {
+      //   return ws.send(
+      //     JSON.stringify({
+      //       message: `Invalid client(s) in the recipient list. Use the 'set-neighbours' command to set the neighbours of the client.`,
+      //     })
+      //   );
+      // }
 
       // send message to specified clients
       return wsService.forwardMessage(messageData);
