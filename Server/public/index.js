@@ -23,7 +23,7 @@ const currentHost = window.location.hostname;
 const currentPort = window.location.port;
 const currentProtocol = window.location.protocol == "https:" ? "wss" : "ws";
 
-const randomId = Math.floor(Math.random() * 10000);
+const randomId = Math.floor(999 + Math.random() * 9000);
 const ws = new WebSocket(
   `${currentProtocol}://${currentHost}:${currentPort}?id=inspector${randomId}`
 );
