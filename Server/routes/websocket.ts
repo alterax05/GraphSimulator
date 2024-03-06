@@ -101,16 +101,17 @@ wsServer.on("connection", async (ws, request) => {
       }
 
       // check if the recipient list contains invalid ids
-      if (!messageData.to.every((id) => wsService.getClient(id))) {
-        return ws.send(
-          JSON.stringify({
-            message: `Invalid client(s) in the recipient list. Use the 'list-users' command to list the connected users`,
-          })
-        );
-      }
+      // TODO: disabled to keep it simple for end users to test
+      // if (!messageData.to.every((id) => wsService.getClient(id))) {
+      //   return ws.send(
+      //     JSON.stringify({
+      //       message: `Invalid client(s) in the recipient list. Use the 'list-users' command to list the connected users`,
+      //     })
+      //   );
+      // }
 
       // check if the recipient list contains invalid neighbours
-      // TODO: disabled to keep the java client simple
+      // TODO: disabled to keep it simple for end users to test
       // if (
       //   !messageData.to.every((id) =>
       //     wsService.graph.areNeighbours(client.id, id)
