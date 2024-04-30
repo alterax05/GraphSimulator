@@ -72,6 +72,7 @@ class WebSocketService {
       neighbours: [],
       failedPings: 0,
       state: null,
+      strict: false,
     };
     this.graph.addNode(newClient);
     return newClient;

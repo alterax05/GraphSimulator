@@ -33,6 +33,12 @@ export interface Client {
    * The state of the client.
    */
   state: string | null;
+
+  /**
+   * Whether the client wants to enable strict mode.
+   * In strict mode, the client can only send messages to its neighbours.
+   */
+  strict: boolean;
 }
 
 /**

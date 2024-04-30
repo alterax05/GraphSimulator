@@ -50,6 +50,11 @@ export enum Command {
    * Command to set the state.
    */
   SetState = "set-state",
+
+  /**
+   * Command to set/unset the strict mode.
+   */
+  SetStictMode = "set-strict-mode",
 }
 
 

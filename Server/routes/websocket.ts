@@ -102,28 +102,26 @@ wsServer.on("connection", async (ws, request) => {
       }
 
       // check if the recipient list contains invalid ids
-      // TODO: disabled to keep it simple for end users to test
-      // if (!messageData.to.every((id) => wsService.getClient(id))) {
-      //   return ws.send(
-      //     JSON.stringify({
-      //       message: `Invalid client(s) in the recipient list. Use the 'list-users' command to list the connected users`,
-      //     })
-      //   );
-      // }
+      if (client.strict && !messageData.to.every((id) => wsService.getClient(id))) {
+        return ws.send(
+          JSON.stringify({
+            message: `Invalid client(s) in the recipient list. Use the 'list-users' command to list the connected users`,
+          })
+        );
+      }
 
       // check if the recipient list contains invalid neighbours
-      // TODO: disabled to keep it simple for end users to test
-      // if (
-      //   !messageData.to.every((id) =>
-      //     wsService.graph.areNeighbours(client.id, id)
-      //   )
-      // ) {
-      //   return ws.send(
-      //     JSON.stringify({
-      //       message: `Invalid client(s) in the recipient list. Use the 'set-neighbours' command to set the neighbours of the client.`,
-      //     })
-      //   );
-      // }
+      if ( client.strict &&
+        !messageData.to.every((id) =>
+          wsService.graph.areNeighbours(client.id, id)
+        )
+      ) {
+        return ws.send(
+          JSON.stringify({
+            message: `Invalid client(s) in the recipient list. Use the 'set-neighbours' command to set the neighbours of the client.`,
+          })
+        );
+      }
 
       // send message to specified clients
       return wsService.forwardMessage(messageData);
@@ -162,6 +160,11 @@ wsServer.on("connection", async (ws, request) => {
 
     if (messageData.command === Command.GetGraph) {
       return wsService.sendGraph(client);
+    }
+
+    if (messageData.command === Command.SetStictMode) {
+      client.strict = !client.strict;
+      return ws.send(JSON.stringify({ message: "strict mode set to " + client.strict }));
     }
 
     return ws.send(JSON.stringify({ message: "Invalid message" }));
