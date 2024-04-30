@@ -1,5 +1,12 @@
 import { WebSocket } from "ws";
-import { Client, ClientMessage, NodeData, Nodes, RealtimeAction, RealtimeGraph } from "../types/socket";
+import {
+  Client,
+  ClientMessage,
+  NodeData,
+  Nodes,
+  RealtimeAction,
+  RealtimeGraph,
+} from "../types/socket";
 import Graph from "../utils/graph";
 import { Topic } from "../utils/socketUtils";
 
@@ -27,15 +34,18 @@ class WebSocketService {
    */
   public listUsers(senderClient: Client) {
     const nodes = this.graph.getNodes();
-    const nodesData = Array.from(nodes.keys()).map((id) => ({
-      id,
-      state: nodes.get(id)?.state,
-    } as NodeData));
+    const nodesData = Array.from(nodes.keys()).map(
+      (id) =>
+        ({
+          id,
+          state: nodes.get(id)?.state,
+        }) as NodeData,
+    );
 
     senderClient.ws.send(
       JSON.stringify({
         nodes: nodesData,
-      } as Nodes)
+      } as Nodes),
     );
   }
 
@@ -51,7 +61,7 @@ class WebSocketService {
       this.graph.setNeighbours(sender.id, message.neighbours);
 
       return sender.ws.send(
-        JSON.stringify({ message: "Neighbours set successfully" })
+        JSON.stringify({ message: "Neighbours set successfully" }),
       );
     }
 
@@ -99,7 +109,7 @@ class WebSocketService {
     return client.ws.send(
       JSON.stringify({
         message: "Subscribed to realtime actions",
-      })
+      }),
     );
   }
 
@@ -119,7 +129,7 @@ class WebSocketService {
    */
   public publishRealtimeUsersList() {
     const subscribedUsers = Array.from(this.graph.getNodes().values()).filter(
-      (client) => client.subscriptions.includes(Topic.RealtimeListUsers)
+      (client) => client.subscriptions.includes(Topic.RealtimeListUsers),
     );
 
     subscribedUsers.forEach((client) => this.listUsers(client));
@@ -132,14 +142,14 @@ class WebSocketService {
    */
   public publishRealtimeAction(sender: Client, senderMessage: ClientMessage) {
     const subscribedUsers = Array.from(this.graph.getNodes().values()).filter(
-      (client) => client.subscriptions.includes(Topic.RealtimeListActions)
+      (client) => client.subscriptions.includes(Topic.RealtimeListActions),
     );
     subscribedUsers.forEach((client) => {
       client.ws.send(
         JSON.stringify({
           from: sender.id,
           action: senderMessage,
-        } as RealtimeAction)
+        } as RealtimeAction),
       );
     });
   }
@@ -149,7 +159,7 @@ class WebSocketService {
    */
   public publishRealtimeGraph() {
     const subscribedUsers = Array.from(this.graph.getNodes().values()).filter(
-      (client) => client.subscriptions.includes(Topic.RealtimeGraph)
+      (client) => client.subscriptions.includes(Topic.RealtimeGraph),
     );
 
     subscribedUsers.forEach((client) => this.sendGraph(client));
@@ -164,7 +174,7 @@ class WebSocketService {
     sender.ws.send(
       JSON.stringify({
         graph: adjacencyList,
-      } as RealtimeGraph)
+      } as RealtimeGraph),
     );
   }
 
@@ -197,7 +207,7 @@ class WebSocketService {
 
   /**
    * Retrieves the client with the specified ID from the graph.
-   * 
+   *
    * @param id - The ID of the client to retrieve.
    * @returns The client node with the specified ID.
    */
@@ -228,7 +238,7 @@ class WebSocketService {
 
     client.state = message.message;
     return client.ws.send(
-      JSON.stringify({ message: `State set to: ${message.message}` })
+      JSON.stringify({ message: `State set to: ${message.message}` }),
     );
   }
 }

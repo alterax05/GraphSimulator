@@ -31,7 +31,7 @@ const randomId = Math.floor(999 + Math.random() * 9000);
 
 // Create a WebSocket connection
 const ws = new WebSocket(
-  `${currentProtocol}://${currentHost}:${currentPort}?id=inspector${randomId}`
+  `${currentProtocol}://${currentHost}:${currentPort}?id=inspector${randomId}`,
 );
 
 // Initialize known users list
@@ -112,7 +112,7 @@ const updateNodes = (graph) => {
     edges.forEach((edge) => {
       if (
         !graph.find(
-          (node) => node[0] === edge.from && node[1].includes(edge.to)
+          (node) => node[0] === edge.from && node[1].includes(edge.to),
         )
       ) {
         edges.remove(edge.id);
@@ -123,7 +123,7 @@ const updateNodes = (graph) => {
     edges.forEach((edge) => {
       if (
         !graph.find(
-          (node) => node[0] === edge.from && node[1].includes(edge.to)
+          (node) => node[0] === edge.from && node[1].includes(edge.to),
         )
       ) {
         edges.remove(edge.id);

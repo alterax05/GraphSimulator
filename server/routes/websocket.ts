@@ -39,7 +39,7 @@ wsServer.on("connection", async (ws, request) => {
     rateLimitStatus = await rateLimiter.consume(ip);
   } catch (err) {
     ws.send(
-      JSON.stringify({ message: "Maximum connections reached", rateInfo: err })
+      JSON.stringify({ message: "Maximum connections reached", rateInfo: err }),
     );
     return ws.close();
   }
@@ -97,29 +97,33 @@ wsServer.on("connection", async (ws, request) => {
       // check if it's too big
       if (messageData.message && messageData.message.length > 100) {
         return ws.send(
-          JSON.stringify({ message: "Message too big. Max 100 characters" })
+          JSON.stringify({ message: "Message too big. Max 100 characters" }),
         );
       }
 
       // check if the recipient list contains invalid ids
-      if (client.strict && !messageData.to.every((id) => wsService.getClient(id))) {
+      if (
+        client.strict &&
+        !messageData.to.every((id) => wsService.getClient(id))
+      ) {
         return ws.send(
           JSON.stringify({
             message: `Invalid client(s) in the recipient list. Use the 'list-users' command to list the connected users`,
-          })
+          }),
         );
       }
 
       // check if the recipient list contains invalid neighbours
-      if ( client.strict &&
+      if (
+        client.strict &&
         !messageData.to.every((id) =>
-          wsService.graph.areNeighbours(client.id, id)
+          wsService.graph.areNeighbours(client.id, id),
         )
       ) {
         return ws.send(
           JSON.stringify({
             message: `Invalid client(s) in the recipient list. Use the 'set-neighbours' command to set the neighbours of the client.`,
-          })
+          }),
         );
       }
 
@@ -164,7 +168,9 @@ wsServer.on("connection", async (ws, request) => {
 
     if (messageData.command === Command.SetStictMode) {
       client.strict = !client.strict;
-      return ws.send(JSON.stringify({ message: "strict mode set to " + client.strict }));
+      return ws.send(
+        JSON.stringify({ message: "strict mode set to " + client.strict }),
+      );
     }
 
     return ws.send(JSON.stringify({ message: "Invalid message" }));

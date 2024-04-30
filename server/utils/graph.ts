@@ -16,7 +16,7 @@ class Graph {
 
   /**
    * Adds a node to the graph.
-   * 
+   *
    * @param client - The client object representing the node to be added.
    */
   public addNode(client: Client): void {
@@ -44,7 +44,7 @@ class Graph {
 
   /**
    * Adds a neighbour to a given node in the graph.
-   * 
+   *
    * @param fromNode - The node to add the neighbour to.
    * @param toNode - The neighbour node to be added.
    */
@@ -59,14 +59,14 @@ class Graph {
 
   /**
    * Sets the neighbours of a given node in the graph.
-   * 
+   *
    * @param fromNode - The node for which to set the neighbours.
    * @param neighbours - An array of strings representing the neighbours of the node.
    */
   public setNeighbours(fromNode: string, neighbours: string[]): void {
     if (!this.nodes.has(fromNode)) return;
     const existingNeighbours = neighbours.filter((neighbour) =>
-      this.nodes.has(neighbour)
+      this.nodes.has(neighbour),
     );
 
     this.adjacencyList.set(fromNode, existingNeighbours);
@@ -83,7 +83,7 @@ class Graph {
     for (let edgesInfo of this.adjacencyList) {
       const edgesFromNodeId = edgesInfo[0];
       const newEdges = edgesInfo[1].filter(
-        (neighbours) => neighbours !== nodeId
+        (neighbours) => neighbours !== nodeId,
       );
 
       this.adjacencyList.set(edgesFromNodeId, newEdges);
@@ -102,7 +102,7 @@ class Graph {
 
   /**
    * Returns the adjacency list of the graph.
-   * 
+   *
    * @returns The adjacency list of the graph.
    */
   public getAdjacencyList() {
@@ -128,7 +128,7 @@ class Graph {
 
   /**
    * Checks if a node with the specified ID exists in the graph.
-   * 
+   *
    * @param nodeId - The ID of the node to check.
    * @returns `true` if a node with the specified ID exists, `false` otherwise.
    */

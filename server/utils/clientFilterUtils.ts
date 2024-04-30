@@ -3,9 +3,9 @@ import { IncomingMessage } from "http";
 class ClientFilterUtils {
   /**
    * Checks if the provided ID is valid using a regular expression.
-   * 
+   *
    * The ID must start with A, B, or C followed by a number between 0 and 32.
-   * 
+   *
    * @param id - The ID to validate.
    * @returns `true` if the ID is valid, `false` otherwise.
    */
@@ -15,7 +15,7 @@ class ClientFilterUtils {
 
     return idPattern.test(id);
   }
-  
+
   /**
    * Retrieves the IP address from the request object or the x-forwarded-for header.
    * @param req - The incoming request object.
@@ -25,10 +25,9 @@ class ClientFilterUtils {
     let ip: string;
     // check if x-forwarded-for exists in the headers (provided by nginx)
     if (req.headers["x-forwarded-for"]) {
-      if(typeof req.headers["x-forwarded-for"] === "string")
+      if (typeof req.headers["x-forwarded-for"] === "string")
         ip = req.headers["x-forwarded-for"].split(",")[0];
-      else
-        ip = req.headers["x-forwarded-for"][0];
+      else ip = req.headers["x-forwarded-for"][0];
     } else {
       ip = req.socket.remoteAddress || "";
     }

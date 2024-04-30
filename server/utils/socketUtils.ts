@@ -57,7 +57,6 @@ export enum Command {
   SetStictMode = "set-strict-mode",
 }
 
-
 /**
  * Enum representing different topics for socket communication.
  */
