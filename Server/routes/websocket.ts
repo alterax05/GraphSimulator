@@ -25,6 +25,7 @@ wsServer.on("connection", async (ws, request) => {
   const { query } = UrlParser.parse(request.url, true);
   const id = query.id;
 
+  // get ip address from request
   const ip = ClientFilterUtils.getIpRequest(request);
 
   if (!ip) {
@@ -128,6 +129,8 @@ wsServer.on("connection", async (ws, request) => {
       return wsService.forwardMessage(messageData);
     }
 
+    // handle commands
+
     if (messageData.command === Command.ListUsers) {
       return wsService.listUsers(client);
     }
@@ -171,6 +174,7 @@ wsServer.on("connection", async (ws, request) => {
   });
 
   ws.on("pong", () => {
+    // reset failed ping counter (the client is still connected)
     const client = wsService.getClient(id);
     if (!client) return;
     client.failedPings = 0;
