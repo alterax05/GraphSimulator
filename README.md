@@ -23,7 +23,7 @@ The repository also contains a starter project to interact with the backend serv
 
 Download the repository and setup the <b>serverUrl</b> string in the Main.java file to point to the school's backend.
 
-Additional info in the [Client README](./WebsocketClientExample/README.md)
+Additional info in the [Client README](./examples/WebsocketClientExample/README.md)
 
 ## Available Actions
 
