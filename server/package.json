@@ -18,7 +18,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "express": "^4.19.2",
+    "express": "^4.21.0",
     "rate-limiter-flexible": "^4.0.1",
     "url": "^0.11.3",
     "ws": "^8.17.1",
