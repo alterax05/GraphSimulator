@@ -88,8 +88,13 @@ Additional info in the [Client README](./examples/websocketClientExample/README.
 
 - Get adjacency list of the network's graph in realtime (receive an event each time a user connects/disconnects/updates his neighbours)
 
+  
+
 ```
 {
     "command": "realtime-get-graph"
 }
 ```
+
+### Contributors
+We thank Michele Porcellato, Martin Meneghetti, and Carlo Ghiraldo for developing the code.
